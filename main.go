@@ -2,50 +2,60 @@ package main
 
 import (
 	"embed"
-	"html/template"
+	"fmt"
 	"net/http"
+	"os"
+
+	"github.com/gorilla/handlers"
+	"github.com/gorilla/mux"
 )
 
 //go:embed index.html
 var Templates embed.FS
 
-type Mpage struct{
-
-	Countries []string
-	Data []Post
-
-}
-
-type Post struct {
-    Title string
+type IndexCard struct {
+	Title string
 	Content string
-
 }
+func ArticleHandler(resp http.ResponseWriter, req *http.Request) {
+	vars := mux.Vars(req)
+    
+	fmt.Fprintf(resp, "Category: %v\n , Id: %v\n", vars["category"],vars["id"])
+	
+}
+
 
 func main() {
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", Index)
+	router := mux.NewRouter()
+	router.Schemes("https")
+	router.Use()
+	
 
-	server := http.Server{
-		Addr:    ":8080",
-		Handler: mux,
-	}
-	server.ListenAndServe()
+
+	router.HandleFunc("/",IndexHandler).Methods("GET")
+	router.HandleFunc("/login",LoginHandler).Methods("POST")
+
+	router.HandleFunc("/articles/{category}/{id:[0-9]+}", ArticleHandler)
+    
+	logged_handlers := handlers.LoggingHandler(os.Stdout,router)
+	contetTypeHandler := handlers.ContentTypeHandler(logged_handlers,"application/json")
+    compressedHandlers := handlers.CompressHandler(contetTypeHandler)
+	http.ListenAndServe(":8080",compressedHandlers)
+
+	
+
 
 }
 
-func Index(resp http.ResponseWriter, req *http.Request) {
+func IndexHandler(resp http.ResponseWriter, req *http.Request) {
+ mess := string("Hi form naresh")
+ resp.Write([]byte(mess))
 
-	t := template.Must(template.ParseFS(Templates,"index.html"))
-	var data []Post
-    opost := Post{
-		Title: "Coming Soon",
-		Content: "We are working on building the next generation blog for the locals",
-	}
-	data = append(data,opost)
 
-	page_data := Mpage{ Countries: []string{"India","USA","Canada","UK"}, Data: data}
-	t.Execute(resp, page_data)
 }
 
+func LoginHandler(resp http.ResponseWriter, req *http.Request) {
+
+
+}
