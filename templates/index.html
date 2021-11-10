@@ -1,0 +1,57 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <title>Coming Soon - QuillPen</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+
+<body class="bg-light text-dark">
+
+    <nav class="text-center">
+        <div> 
+        <h1>QuillPen</h1>
+        </div>
+            
+    </nav>
+
+    <!-- Intro -->
+
+    <div id="intro " class="p-5 m-5 text-center bg-dark text-light ">
+        <p class="mb-3 h2 ">Quillpen is a free blogging platform for Educational Insitutions</p>
+        <p class="mb-3 h2 ">Just Signup for Reading/Writing !!</p>
+        <a class="btn m-2 " href="#login " role="button ">Login</a>
+        <a class="btn m-2 " href="#signup " role="button ">Signup</a>
+    </div>
+    
+    
+    <div class="container mb-4">
+        <div class="row">
+         <div class="col">{{template "login"}} </div>
+        <div class="col">{{template "signup"}} </div> 
+
+            
+        </div>
+
+        
+    </div>
+
+    
+       
+       
+    
+
+    <!-- Pills content -->
+
+    <!-- Pills content -->
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js " integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM " crossorigin="anonymous "></script>
+</body>
+
+</html>
+{{end}}
