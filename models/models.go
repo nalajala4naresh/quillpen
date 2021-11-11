@@ -1,7 +1,9 @@
 package models
 
-
-import "time"
+import (
+	"time"
+	"golang.org/x/crypto/bcrypt"
+)
 
 type Signupform struct {
 
@@ -12,12 +14,28 @@ type Signupform struct {
 
 }
 
+
+
+func (s *Signupform) Hash(){
+
+	hashed_pass, error := bcrypt.GenerateFromPassword([]byte(s.Password),bcrypt.DefaultCost)
+	if error !=nil {
+		panic("unable to hash password")
+	}
+	
+	s.Password = string(hashed_pass)
+
+}
+
 type Account struct {
 
-	UserName string `schema: "username,required"`
-	Password string `schema: "password,required"`
+	Email string `schema: "email,required", bson:"email,required"`
+	Password string `schema: "password,required" , bson:"password,required"`
 	
 }
+
+
+
 
 type Post struct{
 	PostId string `bson:"post_id"`
@@ -25,3 +43,4 @@ type Post struct{
 	Created_by string `bson: "created_by"`
 	Created_at time.Time `bson: "created_time"`
 }
+

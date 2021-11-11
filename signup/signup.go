@@ -36,11 +36,13 @@ func SignUpHandler(resp http.ResponseWriter , req *http.Request) {
 	}
 	decoder := schema.NewDecoder()
 	decoder.Decode(&new_account, req.Form)
+	new_account.Hash()
 
 	// check for existing account using email address
-	options:= options.Client().SetConnectTimeout(1 * time.Second).ApplyURI("mongodb://localhost:27017")
-
-	client, c_error := mongo.Connect(context.TODO(),options)
+	options:= options.Client().ApplyURI("mongodb://localhost:27017")
+    time_out_context , t_cancel := context.WithTimeout(context.Background(),1 * time.Second)
+	defer t_cancel()
+	client, c_error := mongo.Connect(time_out_context,options)
 	
 
 	if c_error != nil {

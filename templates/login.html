@@ -11,13 +11,13 @@
 
         <!-- Email input -->
         <div class="form-outline mb-4">
-            <input type="email" name="username" id="loginName " class="form-control " />
-            <label class="form-label" for="loginName ">Email or username</label>
+            <input type="email" name="email" id="loginName " class="form-control " />
+            <label class="form-label" for="loginName ">Email </label>
         </div>
 
         <!-- Password input -->
         <div class="form-outline mb-4 ">
-            <input type="password" name="password " id=" loginPassword " class="form-control " />
+            <input type="password" name="password" id=" loginPassword " class="form-control " />
             <label class="form-label " for="loginPassword ">Password</label>
         </div>
 
@@ -47,4 +47,18 @@
     </form>
 </div>
 </div>
+{{end}}
+
+{{define "InvalidPassword"}}
+<div>Invalid Password !!</div>
+{{end}}
+
+{{define "loginsuccess"}}
+<div>Good Password !!</div>
+{{end}}
+
+{{define "ISE"}}
+
+<div>Internal Server Error !!</div>
+
 {{end}}
