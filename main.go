@@ -12,6 +12,7 @@ import (
 
 	"quillpen/login"
 	"quillpen/signup"
+	"quillpen/posts"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -24,7 +25,7 @@ import (
 
 
 var cookie_store = sessions.NewCookieStore([]byte("NareshPass"))
-//go:embed templates/* 
+//go:embed templates/index.html templates/login.html templates/signup.html
 var fs embed.FS
 
 var parsed_template *template.Template
@@ -73,7 +74,11 @@ func IndexHandler(resp http.ResponseWriter, req *http.Request) {
 			return
 		}
  	
-		parsed_template.ExecuteTemplate(resp,"base",nil)
+	parsed_template.ExecuteTemplate(resp,"base",nil)
+	posts.Write_posts(nil)
+	
+	
+	
 
 
 }

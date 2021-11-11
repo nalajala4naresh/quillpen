@@ -1,5 +1,5 @@
 FROM scratch
 WORKDIR /code
-COPY main .
+COPY quillpen .
 
-ENTRYPOINT ["./main"]
+ENTRYPOINT ["./quillpen"]

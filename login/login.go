@@ -1,14 +1,11 @@
 package login
 
 import "net/http"
+import "quillpen/models"
 import "github.com/gorilla/schema"
 
 
-type account struct{
 
-	UserName string `schema: "username,required"`
-	Password string `schema: "password,required"`
-}
 
 
 func LoginHandler(resp http.ResponseWriter, req *http.Request) {
@@ -18,7 +15,7 @@ func LoginHandler(resp http.ResponseWriter, req *http.Request) {
 		panic("Unable to parse the form")
 	}
 
-	var account account
+	var account models.Account
 
 	decoder := schema.NewDecoder()
 	decoder.Decode(&account, req.Form)
