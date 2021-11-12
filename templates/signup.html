@@ -5,13 +5,18 @@
     <div class="card-header text-center">SignUp</div>
     <div class="card-body">
     <form action="/signup" method="post" enctype="application/x-www-form-urlencoded">
+        
 
+        <!-- csrf token -->
+        {{ .csrfField }}
+        
         <!-- Name input -->
+
         <div class="form-outline mb-4">
             <input type="text" id="registerName" class="form-control" name="fullname" />
             <label class="form-label" for="registerName">Name</label>
         </div>
-
+        {{ .csrfField }}
         <!-- Username input -->
         <div class="form-outline mb-4">
             <input type="text" id="registerUsername" class="form-control" name="username" />
