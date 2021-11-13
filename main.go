@@ -11,6 +11,7 @@ import (
 	"quillpen/posts"
 	"quillpen/signup"
 	"quillpen/storage"
+	md "github.com/russross/blackfriday"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -76,16 +77,25 @@ func main() {
 
 func IndexHandler(resp http.ResponseWriter, req *http.Request) {
     
-	
+	extensions :=0
 	result_set := storage.FindMany(bson.D{},storage.POSTS_COLLECTIONS,10)
 	if result_set.Posts == nil {
 		panic("Unable to get any posts")
 	}
+	html_render := md.HtmlRenderer(md.HTML_SKIP_HTML,"","")
+	for _, post := range result_set.Posts {
 
-	parsed_template.ExecuteTemplate(resp,"index",map[string]interface{}{
-        csrf.TemplateTag: csrf.TemplateField(req),
-		"posts": result_set.Posts,
-    })
+		if post.MD_Content == nil {
+			continue
+		}
+		
+        
+		html := md.Markdown(post.MD_Content,html_render,extensions)
+		post.HTML_Content = template.HTML(html)
+
+	}
+
+	parsed_template.ExecuteTemplate(resp,"index",result_set.Posts)
 
 
 }
