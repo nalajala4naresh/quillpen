@@ -9,6 +9,7 @@ import (
 	"quillpen/storage"
 
 	"github.com/gorilla/schema"
+	"github.com/gorilla/csrf"
 )
 
 
@@ -18,7 +19,18 @@ var templates *template.Template
 
 func init() {
 
-	templates = template.Must(template.ParseFiles("templates/postsignup.html"))
+	templates = template.Must(template.ParseFiles("templates/postsignup.html","templates/signup.html"))
+
+}
+
+
+func SignUpForm(resp http.ResponseWriter , req *http.Request) {
+
+
+	templates.ExecuteTemplate(resp,"signupview",map[string]interface{}{
+		csrf.TemplateTag: csrf.TemplateField(req),
+	})
+
 
 }
 
@@ -49,5 +61,6 @@ func SignUpHandler(resp http.ResponseWriter , req *http.Request) {
 
 	}
 	fmt.Println(result)
+	http.Redirect(resp,req,"/posts",http.StatusSeeOther)
 	templates.ExecuteTemplate(resp,"thankyou",nil)
 }

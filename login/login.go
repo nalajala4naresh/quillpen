@@ -7,6 +7,7 @@ import (
 	"quillpen/storage"
 
 	"github.com/gorilla/schema"
+	"github.com/gorilla/csrf"
 	"go.mongodb.org/mongo-driver/bson"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -16,6 +17,14 @@ var templates *template.Template
 func init() {
 
 	templates = template.Must(template.ParseFiles("templates/login.html"))
+
+}
+
+func LoginForm(resp http.ResponseWriter, req *http.Request) {
+
+	templates.ExecuteTemplate(resp,"loginview",map[string]interface{}{
+        csrf.TemplateTag: csrf.TemplateField(req),
+    })
 
 }
 
@@ -35,8 +44,7 @@ func LoginHandler(resp http.ResponseWriter, req *http.Request) {
 
 
 	// if account exists return an error mesage
-	existing_account := storage.FindAccount(bson.D{{"email", given_account.Email}})
-
+	existing_account := storage.FindAccount(bson.M{"email": given_account.Email})
 	if existing_account != nil {
 
 		// Password comparison
@@ -48,7 +56,7 @@ func LoginHandler(resp http.ResponseWriter, req *http.Request) {
 			templates.ExecuteTemplate(resp, "InvalidPassword", nil)
 			return
 		}
-		templates.ExecuteTemplate(resp, "loginsuccess", nil)
+		http.Redirect(resp,req,"/posts",http.StatusSeeOther)
 
 
 	} else{
@@ -56,9 +64,6 @@ func LoginHandler(resp http.ResponseWriter, req *http.Request) {
 		templates.ExecuteTemplate(resp, "MissingAccount", nil)
 
 	}
-	
-
-	// return session token
 
 	
 

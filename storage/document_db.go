@@ -21,13 +21,9 @@ import (
 const caFilePath = "rds-combined-ca-bundle.pem"
 const connectTimeout=5
 const queryTimeout = 30
-
 const connectionStringTemplate = "mongodb://%s:%s@%s/quillpen"
-// var username = "myUserAdmin"
-// var password = "abc123"
-// var DOCDB_ENDPOINT = "localhost"
-// var DOCDB_DB = "quillpen"
-// var ACCOUNTS_COLLECTION = "accounts"
+
+
 
 var username = os.Getenv("DOCDB_USER")
 var password = os.Getenv("DOCDB_PASS")
@@ -66,18 +62,18 @@ func MongoOptions(endpoint string) *options.ClientOptions {
 
 	connectionURI := fmt.Sprintf(connectionStringTemplate, username, password, endpoint)
 
-	// tlsConfig, err := getCustomTLSConfig(caFilePath)
-	// if err != nil {
-		// log.Fatalf("Failed getting TLS configuration: %v", err)
-	// }
+	tlsConfig, err := getCustomTLSConfig(caFilePath)
+	if err != nil {
+		log.Fatalf("Failed getting TLS configuration: %v", err)
+	}
 
 	c_options := options.Client().ApplyURI(connectionURI)
-
-	// if os.Getenv("STAGE") != "local" {
-	// 	c_options = c_options.SetTLSConfig(tlsConfig)
+    
+	if os.Getenv("STAGE") != "local" {
+		c_options = c_options.SetTLSConfig(tlsConfig)
 		
 		
-	// }
+	}
 
 	return c_options
 
@@ -88,9 +84,9 @@ func MongoOptions(endpoint string) *options.ClientOptions {
 
 
 func FindAccount(query interface{}) *models.Account{
-    query , ok := query.(bson.D)
+    query , ok := query.(bson.M)
 	if !ok {
-		panic("The query should be of bson.D type")
+		panic("The query should be of bson.M type")
 
 	}
 
@@ -109,7 +105,7 @@ func FindAccount(query interface{}) *models.Account{
 
 	var account models.Account
 
-	find_err := data_collection.FindOne(ctx2, query).Decode(account)
+	find_err := data_collection.FindOne(ctx2, query).Decode(&account)
 
 	if find_err !=nil {
 		return nil

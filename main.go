@@ -9,6 +9,7 @@ import (
 	"quillpen/login"
 	"quillpen/posts"
 	"quillpen/signup"
+	"quillpen/storage"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -24,7 +25,7 @@ var parsed_template *template.Template
 
 func init() {
 
-	parsed_template = template.Must(template.ParseFiles("templates/index.html", "templates/login.html","templates/signup.html"))
+	parsed_template = template.Must(template.ParseFiles("templates/index.html", "templates/login.html","templates/signup.html","templates/posts.html"))
 }
 
 
@@ -40,7 +41,7 @@ func main() {
 	csrf.RequestHeader("Authenticity-Token"),
 	csrf.FieldName("authenticity_token"),
 	csrf.SameSite(csrf.SameSiteLaxMode),
-	csrf.Secure(false),
+	csrf.Secure(true),
 )
 
 
@@ -51,8 +52,10 @@ func main() {
 
 
 	router.HandleFunc("/",IndexHandler).Methods("GET")
-	router.HandleFunc("/signup",signup.SignUpHandler).Methods("POST")
-	router.HandleFunc("/login",login.LoginHandler)
+	router.Handle("/signup",handlers.MethodHandler{"GET":http.HandlerFunc(signup.SignUpForm),
+	"POST":http.HandlerFunc(signup.SignUpHandler)})
+	router.Handle("/login",handlers.MethodHandler{"GET":http.HandlerFunc(login.LoginForm),
+	"POST":http.HandlerFunc(login.LoginHandler)})
 	router.HandleFunc("/posts",posts.Read_Posts).Methods("GET")
 	router.HandleFunc("/post/{postid}",posts.Read_A_Post).Methods("GET")
 
@@ -68,9 +71,13 @@ func main() {
 }
 
 func IndexHandler(resp http.ResponseWriter, req *http.Request) {
+    
+	
+	posts := storage.ListPosts()
 
-	parsed_template.ExecuteTemplate(resp,"base",map[string]interface{}{
+	parsed_template.ExecuteTemplate(resp,"index",map[string]interface{}{
         csrf.TemplateTag: csrf.TemplateField(req),
+		"posts": posts,
     })
 
 
