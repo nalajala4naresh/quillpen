@@ -36,22 +36,30 @@ func LoginHandler(resp http.ResponseWriter, req *http.Request) {
 
 	// if account exists return an error mesage
 	existing_account := storage.FindAccount(bson.D{{"email", given_account.Email}})
-	
+
 	if existing_account != nil {
-		templates.ExecuteTemplate(resp,"ISE", nil)
-	return	
+
+		// Password comparison
+
+		password_check_err := bcrypt.CompareHashAndPassword([]byte(existing_account.Password), []byte(given_account.Password))
+		if password_check_err != nil {
+			// write Inavlid password to HTML
+	
+			templates.ExecuteTemplate(resp, "InvalidPassword", nil)
+			return
+		}
+		templates.ExecuteTemplate(resp, "loginsuccess", nil)
+
+
+	} else{
+
+		templates.ExecuteTemplate(resp, "MissingAccount", nil)
+
 	}
+	
 
-	password_check_err := bcrypt.CompareHashAndPassword([]byte(existing_account.Password), []byte(given_account.Password))
-
-	if password_check_err != nil {
-		// write Inavlid password to HTML
-
-		templates.ExecuteTemplate(resp, "InvalidPassword", nil)
-		return
-	}
 	// return session token
 
-	templates.ExecuteTemplate(resp, "loginsuccess", nil)
+	
 
 }

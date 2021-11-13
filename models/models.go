@@ -39,6 +39,8 @@ type Account struct {
 
 type Post struct{
 	PostId string `bson:"post_id"`
+	Summary string `bson:"summary"`
+	Title string `bson:"title"`
 	Content string `bson:"content"`
 	Created_by string `bson: "created_by"`
 	Created_at time.Time `bson: "created_time"`

@@ -1,20 +1,20 @@
 package storage
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
-	"io/ioutil"
-	"os"
 	"fmt"
-	"context"
-	"time"
+	"io/ioutil"
 	"log"
+	"os"
+	"time"
 
 	"quillpen/models"
 
-	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -23,6 +23,12 @@ const connectTimeout=5
 const queryTimeout = 30
 
 const connectionStringTemplate = "mongodb://%s:%s@%s/quillpen"
+// var username = "myUserAdmin"
+// var password = "abc123"
+// var DOCDB_ENDPOINT = "localhost"
+// var DOCDB_DB = "quillpen"
+// var ACCOUNTS_COLLECTION = "accounts"
+
 var username = os.Getenv("DOCDB_USER")
 var password = os.Getenv("DOCDB_PASS")
 var DOCDB_ENDPOINT = os.Getenv("DOCDB_ENDPOINT")
@@ -60,18 +66,18 @@ func MongoOptions(endpoint string) *options.ClientOptions {
 
 	connectionURI := fmt.Sprintf(connectionStringTemplate, username, password, endpoint)
 
-	tlsConfig, err := getCustomTLSConfig(caFilePath)
-	if err != nil {
-		log.Fatalf("Failed getting TLS configuration: %v", err)
-	}
+	// tlsConfig, err := getCustomTLSConfig(caFilePath)
+	// if err != nil {
+		// log.Fatalf("Failed getting TLS configuration: %v", err)
+	// }
 
 	c_options := options.Client().ApplyURI(connectionURI)
 
-	if os.Getenv("STAGE") != "local" {
-		c_options = c_options.SetTLSConfig(tlsConfig)
+	// if os.Getenv("STAGE") != "local" {
+	// 	c_options = c_options.SetTLSConfig(tlsConfig)
 		
 		
-	}
+	// }
 
 	return c_options
 
