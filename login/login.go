@@ -44,8 +44,9 @@ func LoginHandler(resp http.ResponseWriter, req *http.Request) {
 
 
 	// if account exists return an error mesage
-	existing_account := storage.FindAccount(bson.M{"email": given_account.Email})
-	if existing_account != nil {
+	result := storage.FindOne(bson.M{"email": given_account.Email},storage.ACCOUNTS_COLLECTION)
+	if result.Account != nil {
+		existing_account := result.Account
 
 		// Password comparison
 

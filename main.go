@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 
+	"quillpen/editor"
 	"quillpen/login"
 	"quillpen/posts"
 	"quillpen/signup"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"go.mongodb.org/mongo-driver/bson"
 
 	"github.com/gorilla/csrf"
 	_ "github.com/gorilla/sessions"
@@ -41,7 +43,7 @@ func main() {
 	csrf.RequestHeader("Authenticity-Token"),
 	csrf.FieldName("authenticity_token"),
 	csrf.SameSite(csrf.SameSiteLaxMode),
-	csrf.Secure(true),
+	csrf.Secure(false),
 )
 
 
@@ -57,8 +59,10 @@ func main() {
 	router.Handle("/login",handlers.MethodHandler{"GET":http.HandlerFunc(login.LoginForm),
 	"POST":http.HandlerFunc(login.LoginHandler)})
 	router.HandleFunc("/posts",posts.Read_Posts).Methods("GET")
+	router.HandleFunc("/post",posts.Write_post).Methods("POST")
 	router.HandleFunc("/post/{postid}",posts.Read_A_Post).Methods("GET")
 
+	router.HandleFunc("/editor",editor.EditorSpace).Methods("GET")
 
 
     
@@ -73,11 +77,14 @@ func main() {
 func IndexHandler(resp http.ResponseWriter, req *http.Request) {
     
 	
-	posts := storage.ListPosts()
+	result_set := storage.FindMany(bson.D{},storage.POSTS_COLLECTIONS,10)
+	if result_set.Posts == nil {
+		panic("Unable to get any posts")
+	}
 
 	parsed_template.ExecuteTemplate(resp,"index",map[string]interface{}{
         csrf.TemplateTag: csrf.TemplateField(req),
-		"posts": posts,
+		"posts": result_set.Posts,
     })
 
 

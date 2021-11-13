@@ -48,10 +48,7 @@
             <form action="/post/{{.PostId}}">
             <div class="card h-100">
                 <div class="card-body">
-                    <h4 class="card-title">
-                        {{.Title}}
-                    </h4>
-                    <p class="card-text">{{.Summary}}</p>
+                    {{.HTML_Content}}
                     <button type="submit" class="btn btn-primary">Read</button>
                 </div>
                 {{if .Created_by}}
@@ -79,11 +76,7 @@
         <div class="col-lg-12  mb-4">
             <div class="card h-100">
                 <div class="card-body">
-                    <h4 class="card-title text-center">
-                        {{.Title}}
-                    </h4>
-                    <p class="card-text h3">{{.Summary}}</p>
-                    <p class ="card-text"> {{.Content}}</p>
+                    {{.HTML_Content}}
                 </div>
                 {{if .Created_by}}
                 <div class="card-footer bg-transparent border-success">{{.Created_by}}</div>

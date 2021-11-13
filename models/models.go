@@ -1,6 +1,7 @@
 package models
 
 import (
+	"html/template"
 	"time"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -14,7 +15,16 @@ type Signupform struct {
 
 }
 
+func (s *Signupform) ModelType() string {
+	return "SignupForm"
 
+}
+
+type Model interface {
+
+	ModelType() string
+
+}
 
 func (s *Signupform) Hash(){
 
@@ -34,15 +44,38 @@ type Account struct {
 	
 }
 
+func (s *Account) ModelType() string {
+	return "Account"
+
+}
 
 
 
 type Post struct{
-	PostId string `bson:"post_id"`
+	PostId string `bson:"post_id,omitempty"`
 	Summary string `bson:"summary"`
 	Title string `bson:"title"`
-	Content string `bson:"content"`
-	Created_by string `bson: "created_by"`
-	Created_at time.Time `bson: "created_time"`
+	MD_Content []byte `bson:"md_content", schema: "md_content,required"`
+	HTML_Content template.HTML `bson:"-", schema: "-"`
+	Created_by string `bson: "created_by",schema: "-"`
+	Created_at time.Time `bson: "created_time",schema: "-"`
 }
 
+
+func (s *Post) ModelType() string {
+
+
+	return "Post"
+
+}
+
+type ResultSet struct{
+    Posts []*Post
+	Accounts []*Account
+
+}
+type Result struct {
+
+	Post *Post
+	Account *Account
+}

@@ -1,0 +1,16 @@
+{{define "editorview"}}
+<!DOCTYPE html>
+<html>
+ {{template "head"}}
+    <body>
+        <form action="/post" method="post" enctype="application/x-www-form-urlencoded">
+        {{.csrfField}}
+        <label for="md_content">Your Post:</label>
+        <textarea placeholder="Please write a Mark Down" name="md_content" cols="30", rows="30"></textarea>
+        
+        <button type="submit">Publish</button>
+        </form>
+    </body>
+</html>
+
+{{end}}

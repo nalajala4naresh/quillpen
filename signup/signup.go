@@ -50,7 +50,7 @@ func SignUpHandler(resp http.ResponseWriter , req *http.Request) {
 
 
 	// Try to create Account
-	result, create_err := storage.CreateAccount(new_account)
+	result, create_err := storage.InsertOne(&new_account,storage.ACCOUNTS_COLLECTION)
     
 	_, ok := result.(int)
 	if ok {
