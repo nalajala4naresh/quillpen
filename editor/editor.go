@@ -1,26 +1,23 @@
 package editor
 
 import (
+	"github.com/gorilla/csrf"
 	"html/template"
 	"net/http"
-	"github.com/gorilla/csrf"
 )
-
-
 
 var templates *template.Template
 
 func init() {
 
-	templates = template.Must(template.ParseFiles("templates/editor.html","templates/index.html"))
+	templates = template.Must(template.ParseFiles("templates/editor.html", "templates/index.html"))
 
 }
 
-func EditorSpace(resp http.ResponseWriter,req *http.Request) {
+func EditorSpace(resp http.ResponseWriter, req *http.Request) {
 
-	templates.ExecuteTemplate(resp,"editorview",map[string]interface{}{
-        csrf.TemplateTag: csrf.TemplateField(req),
-    })
-
+	templates.ExecuteTemplate(resp, "editorview", map[string]interface{}{
+		csrf.TemplateTag: csrf.TemplateField(req),
+	})
 
 }

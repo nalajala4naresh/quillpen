@@ -8,13 +8,11 @@ import "golang.org/x/crypto/bcrypt"
 import "quillpen/storage"
 import "quillpen/models"
 
-func SignInForm(resp http.ResponseWriter , req *http.Request) {
+func SignInForm(resp http.ResponseWriter, req *http.Request) {
 
-
-	templates.ExecuteTemplate(resp,"signinview",map[string]interface{}{
+	templates.ExecuteTemplate(resp, "signinview", map[string]interface{}{
 		csrf.TemplateTag: csrf.TemplateField(req),
 	})
-
 
 }
 
@@ -30,11 +28,8 @@ func SignInHandler(resp http.ResponseWriter, req *http.Request) {
 	decoder := schema.NewDecoder()
 	decoder.Decode(&given_account, req.Form)
 
-	
-
-
 	// if account exists return an error mesage
-	account,err := storage.GetAccount( given_account.Email)
+	account, err := storage.GetAccount(given_account.Email)
 	if err == nil {
 		existing_account := account
 
@@ -43,19 +38,16 @@ func SignInHandler(resp http.ResponseWriter, req *http.Request) {
 		password_check_err := bcrypt.CompareHashAndPassword([]byte(existing_account.Password), []byte(given_account.Password))
 		if password_check_err != nil {
 			// write Inavlid password to HTML
-	
+
 			templates.ExecuteTemplate(resp, "InvalidPassword", nil)
 			return
 		}
-		http.Redirect(resp,req,"/posts",http.StatusSeeOther)
+		http.Redirect(resp, req, "/posts", http.StatusSeeOther)
 
-
-	} else{
+	} else {
 
 		templates.ExecuteTemplate(resp, "MissingAccount", nil)
 
 	}
-
-	
 
 }

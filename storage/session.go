@@ -4,27 +4,25 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
-	"log"
 	"io/ioutil"
+	"log"
 	"os"
-	
+
 	"strconv"
 
 	"github.com/gocql/gocql"
 )
 
 const caFilePath = "rds-combined-ca-bundle.pem"
-const connectTimeout=5
+const connectTimeout = 5
 const queryTimeout = 30
-
-
 
 var Session *gocql.Session
 
 func init() {
 
-	port := func (p string) int {
-		iport,err := strconv.Atoi(p);
+	port := func(p string) int {
+		iport, err := strconv.Atoi(p)
 		if err != nil {
 			return 9042
 
@@ -52,43 +50,33 @@ func init() {
 	}
 	Session = s
 
-	
-
-
 }
 
 func clearSession() {
 	Session.Close()
 }
 
-
 type CassandraConfig struct {
-
-	host string
-	port string
-	keyspace string
+	host       string
+	port       string
+	keyspace   string
 	conistency string
-
 }
 
 var cassandraConfig = CassandraConfig{
-	host:        getEnv("CASSANDRA_HOST", "dev.localhost"),
-	port:        getEnv("CASSANDRA_PORT", "9042"),
-	keyspace:    getEnv("CASSANDRA_KEYSPACE", "quillpen"),
+	host:       getEnv("CASSANDRA_HOST", "localhost"),
+	port:       getEnv("CASSANDRA_PORT", "9042"),
+	keyspace:   getEnv("CASSANDRA_KEYSPACE", "quillpen"),
 	conistency: getEnv("CASSANDRA_CONSISTANCY", "LOCAL_QUORUM"),
 }
 
-func getEnv(key,fallback string) string {
+func getEnv(key, fallback string) string {
 
-	if val,ok := os.LookupEnv(key); ok {
+	if val, ok := os.LookupEnv(key); ok {
 		return val
 	}
 	return fallback
 }
-
-
-
-
 
 func getCustomTLSConfig(caFile string) (*tls.Config, error) {
 	tlsConfig := new(tls.Config)
