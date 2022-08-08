@@ -1,5 +1,8 @@
 {{define "editorview"}}
 <!DOCTYPE html>
+
+
+
 <html>
  {{template "head"}}
     <body>
@@ -7,7 +10,14 @@
         {{.csrfField}}
         <label for="md_content">Your Post:</label>
         <textarea placeholder="Please write a Mark Down" name="md_content" cols="30", rows="30"></textarea>
-        
+
+        <script type="module" src="https://cdn.jsdelivr.net/gh/zerodevx/zero-md@1/src/zero-md.min.js"></script>
+
+<zero-md>
+  <script type="text/markdown">
+   
+  </script>
+</zero-md>
         <button type="submit">Publish</button>
         </form>
     </body>

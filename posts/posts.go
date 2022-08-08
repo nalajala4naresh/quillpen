@@ -135,12 +135,12 @@ func Read_A_Post(resp http.ResponseWriter, req *http.Request) {
 	extensions := 0
 	uri_params  := mux.Vars(req)
 	
-	var result models.Result
-	result = storage.FindOne(bson.M{"post_id":uri_params["postid"]},storage.POSTS_COLLECTIONS)
+	var result models.Post
+	result = storage.GetPost(uri_params["postid"])
 	
 	html_render := md.HtmlRenderer(md.HTML_SKIP_HTML,"","")
 
-	if result.Post == nil {
+	if models.Post == nil {
 		http.NotFound(resp, req)
 		return
 	}

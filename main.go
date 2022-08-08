@@ -49,7 +49,8 @@ func main() {
 
 
 	router := mux.NewRouter()
-	router.Schemes("https")
+
+	// router.Schemes("https")
 
 
 

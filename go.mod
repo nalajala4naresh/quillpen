@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/blevesearch/bleve/v2 v2.2.2 // indirect
+	github.com/gocql/gocql v1.2.0 // indirect
 	github.com/gorilla/csrf v1.7.1
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
