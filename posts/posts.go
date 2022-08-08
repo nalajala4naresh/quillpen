@@ -33,7 +33,13 @@ func CreatePost(resp http.ResponseWriter, req *http.Request) {
 	if post.Content == "" {
 		ListPosts(resp, req)
 	}
-	post.Title = post.Content[:len(post.Content)/3]
+	if len(post.Content) <= 50 {
+		post.Title = post.Content[:len(post.Content)]
+		
+	} else if len(post.Content) > 50  {
+		post.Title = post.Content[:50]
+	}
+	
 	post.Timestamp = time.Now()
 	post.PostId = gocql.UUIDFromTime(post.Timestamp)
 	// now save the html bytes to Storage
