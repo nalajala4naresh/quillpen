@@ -35,6 +35,7 @@ func GetAccount(id string) (*models.Profile, error) {
 		account.Fullname = m["fullname"].(string)
 		account.Email = m["email"].(string)
 		account.Password = m["password"].(string)
+		account.Userhandle = m["userhandle"].(string)
 
 		return account, nil
 

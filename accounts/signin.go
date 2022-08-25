@@ -1,12 +1,14 @@
 package accounts
 
-import "net/http"
-import "encoding/json"
+import (
+	"encoding/json"
+	"errors"
+	"net/http"
+	"quillpen/models"
+	"quillpen/storage"
 
-
-import "golang.org/x/crypto/bcrypt"
-import "quillpen/storage"
-import "quillpen/models"
+	"golang.org/x/crypto/bcrypt"
+)
 
 
 
@@ -18,8 +20,6 @@ func SignInHandler(resp http.ResponseWriter, req *http.Request) {
 	decoder.Decode(&given_account)
 		
 	
-
-	// if account exists return an error mesage
 	account, err := storage.GetAccount(given_account.Email)
 	if err == nil {
 		existing_account := account
@@ -27,14 +27,28 @@ func SignInHandler(resp http.ResponseWriter, req *http.Request) {
 
 		password_check_err := bcrypt.CompareHashAndPassword([]byte(existing_account.Password), []byte(given_account.Password))
 		if password_check_err != nil {
-			// write Inavlid password to HTML
-
+			// write Unauthorized header
 			resp.WriteHeader(http.StatusUnauthorized)
 			return
+			
+		} else {
+			// nullfying password
+			existing_account.Password = "Unknown"
+			data , merr := json.Marshal(existing_account)
+			if merr != nil {
+				resp.WriteHeader(http.StatusInternalServerError)
+				return
+
+			}
+
+			resp.Write(data)
+
 		}
-	} else {
+		
+	} else if errors.Is(err,storage.ACCOUNT_NOT_FOUND) {
 
 		resp.WriteHeader(http.StatusNotFound)
+		
 	}
 
 }

@@ -1,13 +1,14 @@
 package posts
 
 import (
-	"fmt"
+	"encoding/json"
+	
 	"html/template"
+	"io/ioutil"
 	"net/http"
-	"strings"
 	"time"
 
-	"github.com/gocql/gocql"
+	_ "github.com/gocql/gocql"
 	"github.com/gorilla/mux"
 
 	"quillpen/models"
@@ -24,33 +25,23 @@ func init() {
 
 func CreatePost(resp http.ResponseWriter, req *http.Request) {
 
-	req.ParseForm()
+
 	var post models.Post
-	fmt.Println(req.Form)
+
+	defer req.Body.Close()
+	data, _ := ioutil.ReadAll(req.Body)
+	json.Unmarshal(data,&post)
 
 	// fill th post details
-	post.Content = strings.TrimSpace(req.Form["content"][0])
-	if post.Content == "" {
-		ListPosts(resp, req)
-	}
-	if len(post.Content) <= 50 {
-		post.Title = post.Content[:len(post.Content)]
-		
-	} else if len(post.Content) > 50  {
-		post.Title = post.Content[:50]
-	}
-	
 	post.Timestamp = time.Now()
-	post.PostId = gocql.UUIDFromTime(post.Timestamp)
 	// now save the html bytes to Storage
-	err := storage.CreatePost(post)
-	if err != nil {
-		panic("Unable to write the post")
+	cerr := storage.CreatePost(post)
+	if cerr != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
 
 	}
+	resp.WriteHeader(http.StatusOK)
 
-	// redirect user to the same post he wrote, to make any modifications
-	ListPosts(resp, req)
 
 }
 
@@ -71,7 +62,18 @@ func ListPosts(resp http.ResponseWriter, req *http.Request) {
 		cleanedPosts = append(cleanedPosts, *post)
 
 	}
-	templates.ExecuteTemplate(resp, "posts/list", cleanedPosts)
+	data , err := json.Marshal(cleanedPosts)
+	if err != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+		return
+
+
+	}
+
+	resp.WriteHeader(http.StatusOK)
+	resp.Write(data)
+
+
 
 }
 
@@ -87,6 +89,15 @@ func GetPost(resp http.ResponseWriter, req *http.Request) {
 
 	}
 
-	templates.ExecuteTemplate(resp, "posts/one", result)
+	
+	data , merr := json.Marshal(result)
+	if merr != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+		return
+
+
+	}
+	resp.WriteHeader(http.StatusOK)
+	resp.Write(data)
 
 }
