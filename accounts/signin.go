@@ -23,22 +23,18 @@ func SignInHandler(resp http.ResponseWriter, req *http.Request) {
 	account, err := storage.GetAccount(given_account.Email)
 	if err == nil {
 		existing_account := account
-
 		// Password comparison
 
 		password_check_err := bcrypt.CompareHashAndPassword([]byte(existing_account.Password), []byte(given_account.Password))
 		if password_check_err != nil {
 			// write Inavlid password to HTML
 
-			templates.ExecuteTemplate(resp, "InvalidPassword", nil)
+			resp.WriteHeader(http.StatusUnauthorized)
 			return
 		}
-		http.Redirect(resp, req, "/posts", http.StatusSeeOther)
-
 	} else {
 
-		templates.ExecuteTemplate(resp, "MissingAccount", nil)
-
+		resp.WriteHeader(http.StatusNotFound)
 	}
 
 }
