@@ -42,7 +42,6 @@ func ListPosts() []*models.Post {
 		fmt.Println(post.Content)
 
 		posts = append(posts, post)
-		m = map[string]interface{}{}
 	}
 	// handle for empty database page data
 	return posts

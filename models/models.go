@@ -8,7 +8,8 @@ import (
 
 type Profile struct {
 	Account
-	Fullname string `cql:"fullname,omitempty", schema:"fullname,omitempty"`
+	Fullname string `json: "fullname,required" cql:"fullname,required" schema:"fullname,omitempty"`
+	Userhandle string `json: "userhandle,required" cql:"userhandle,required"`
 }
 
 func (p *Profile) ModelType() string {
@@ -32,8 +33,8 @@ func (p *Profile) Hash() {
 }
 
 type Account struct {
-	Email    string `schema: "email,required", cql:"email,required"`
-	Password string `schema: "password,required" , cql:"password,required"`
+	Email    string `json: "email,required" schema: "email,required", cql:"email,required"`
+	Password string `json: "password,required" schema: "password,required" , cql:"password,required"`
 }
 
 func (s *Account) ModelType() string {

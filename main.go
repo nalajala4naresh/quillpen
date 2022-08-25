@@ -7,14 +7,12 @@ import (
 	"os"
 
 	"quillpen/accounts"
-	"quillpen/editor"
 	"quillpen/posts"
 	"quillpen/storage"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
-	"github.com/gorilla/csrf"
 	_ "github.com/gorilla/sessions"
 )
 
@@ -27,32 +25,27 @@ func init() {
 
 func main() {
 
-	csrf_middleware := csrf.Protect([]byte("MyOwnSecret"),
-		csrf.RequestHeader("Authenticity-Token"),
-		csrf.FieldName("authenticity_token"),
-		csrf.SameSite(csrf.SameSiteLaxMode),
-		csrf.Secure(false),
-	)
 
 	router := mux.NewRouter()
 
 	// router.Schemes("https")
 
-	router.HandleFunc("/", IndexHandler).Methods("GET")
+	
 	router.Handle("/signup", handlers.MethodHandler{"GET": http.HandlerFunc(accounts.SignUpForm),
 		"POST": http.HandlerFunc(accounts.SignUpHandler)})
 	router.Handle("/signin", handlers.MethodHandler{"GET": http.HandlerFunc(accounts.SignInForm),
 		"POST": http.HandlerFunc(accounts.SignInHandler)})
+	router.HandleFunc("/mobile/signin", accounts.SignInHandler).Methods("POST")
+	router.HandleFunc("/mobile/signup", accounts.SignUpHandler).Methods("POST")
 	router.HandleFunc("/posts", posts.ListPosts).Methods("GET")
 	router.HandleFunc("/post", posts.CreatePost).Methods("POST")
 	router.HandleFunc("/post/{postid}", posts.GetPost).Methods("GET")
 
-	router.HandleFunc("/editor", editor.EditorSpace).Methods("GET")
 
 	logged_handlers := handlers.LoggingHandler(os.Stdout, router)
 	contetTypeHandler := handlers.ContentTypeHandler(logged_handlers, "application/json", "application/x-www-form-urlencoded")
 	compressedHandlers := handlers.CompressHandler(contetTypeHandler)
-	http.ListenAndServe(":8080", csrf_middleware(compressedHandlers))
+	http.ListenAndServe(":8080", compressedHandlers)
 
 }
 

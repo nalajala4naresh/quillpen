@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 	"quillpen/models"
 
 	"github.com/gocql/gocql"
@@ -12,8 +13,10 @@ var CAN_NOT_CREATE_ACCOUNT = errors.New("Account creation failed")
 
 func CreateAccount(account models.Profile) error {
 
-	q := "INSERT INTO ACCOUNTS (fullname, email, password) VALUES(?,?,?)"
-	err := Session.Query(q, account.Fullname, account.Email, account.Password).Consistency(gocql.Quorum).Exec()
+	q := "INSERT INTO ACCOUNTS (fullname,userhandle, email, password) VALUES(?,?,?,?)"
+	query := Session.Query(q, account.Fullname, account.Userhandle, account.Email, account.Password)
+	fmt.Println(query.String())
+	err := query.Consistency(gocql.Quorum).Exec()
 	if err != nil {
 		return CAN_NOT_CREATE_ACCOUNT
 
