@@ -31,19 +31,15 @@ func main() {
 	// router.Schemes("https")
 
 	
-	router.Handle("/signup", handlers.MethodHandler{"GET": http.HandlerFunc(accounts.SignUpForm),
-		"POST": http.HandlerFunc(accounts.SignUpHandler)})
-	router.Handle("/signin", handlers.MethodHandler{"GET": http.HandlerFunc(accounts.SignInForm),
-		"POST": http.HandlerFunc(accounts.SignInHandler)})
-	router.HandleFunc("/mobile/signin", accounts.SignInHandler).Methods("POST")
-	router.HandleFunc("/mobile/signup", accounts.SignUpHandler).Methods("POST")
+	router.HandleFunc("/signin", accounts.SignInHandler).Methods("POST")
+	router.HandleFunc("/signup", accounts.SignUpHandler).Methods("POST")
 	router.HandleFunc("/posts", posts.ListPosts).Methods("GET")
 	router.HandleFunc("/post", posts.CreatePost).Methods("POST")
 	router.HandleFunc("/post/{postid}", posts.GetPost).Methods("GET")
 
 
 	logged_handlers := handlers.LoggingHandler(os.Stdout, router)
-	contetTypeHandler := handlers.ContentTypeHandler(logged_handlers, "application/json", "application/x-www-form-urlencoded")
+	contetTypeHandler := handlers.ContentTypeHandler(logged_handlers, "application/json")
 	compressedHandlers := handlers.CompressHandler(contetTypeHandler)
 	http.ListenAndServe(":8080", compressedHandlers)
 
