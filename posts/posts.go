@@ -1,96 +1,72 @@
 package posts
 
 import (
-	"encoding/json"
-
-	"html/template"
-	"io/ioutil"
-	"net/http"
-	"time"
-
-	_ "github.com/gocql/gocql"
-	"github.com/gorilla/mux"
-
+	"errors"
+	"fmt"
+	"log"
 	"github.com/quillpen/models"
 	"github.com/quillpen/storage"
+	"time"
+
+	"github.com/gocql/gocql"
 )
 
-var templates *template.Template
+// publishing new post
+func createPost(post models.Post) error {
 
-func init() {
-
-	templates = template.Must(template.ParseFiles("templates/posts.html"))
-
-}
-
-func CreatePost(resp http.ResponseWriter, req *http.Request) {
-
-	var post models.Post
-
-	defer req.Body.Close()
-	data, _ := ioutil.ReadAll(req.Body)
-	json.Unmarshal(data, &post)
-
-	// fill th post details
-	post.Timestamp = time.Now()
-	// now save the html bytes to Storage
-	cerr := storage.CreatePost(post)
-	if cerr != nil {
-		resp.WriteHeader(http.StatusInternalServerError)
-
-	}
-	resp.WriteHeader(http.StatusOK)
-
-}
-
-func ListPosts(resp http.ResponseWriter, req *http.Request) {
-
-	result_set := storage.ListPosts()
-	if result_set == nil {
-		return
-
-	}
-	var cleanedPosts []*models.Post
-	for _, post := range result_set {
-
-		if (*post).Content == "" {
-			continue
-		}
-
-		cleanedPosts = append(cleanedPosts, post)
-
-	}
-	data, err := json.Marshal(cleanedPosts)
+	q := "INSERT INTO POSTS (id, content,author,timestamp) VALUES (?, ?, ?,?)"
+    query := storage.Session.Query(q, post.PostId, post.Content, post.Author,post.Timestamp)
+	// Explictly providing consistency 
+	err := query.Consistency(gocql.Quorum).Exec()
 	if err != nil {
-		resp.WriteHeader(http.StatusInternalServerError)
-		return
-
+		log.Printf("ERROR: fail create post, %s", err.Error())
 	}
 
-	resp.WriteHeader(http.StatusOK)
-	resp.Write(data)
+	return err
 
 }
 
-func GetPost(resp http.ResponseWriter, req *http.Request) {
+// listing top posts per category
+func listPosts() []*models.Post {
 
-	uri_params := mux.Vars(req)
+	q := "SELECT * FROM POSTS LIMIT 20"
 
-	result, err := storage.GetPost(uri_params["postid"])
-	if err != nil {
+	m := map[string]interface{}{}
+	itr := storage.Session.Query(q).Iter()
+	var posts []*models.Post
+	for itr.MapScan(m) {
+		post := new(models.Post)
+		// post.Title = m["title"].(string)
+		post.Content = m["content"].(string)
+		post.PostId = m["id"].(string)
+		// post.Tags = m["tags"].([]string)
+		// post.Timestamp = m["timestamp"].(time.Time)
 
-		http.NotFound(resp, req)
-		return
+		posts = append(posts, post)
+	}
+	// handle for empty database page data
+	fmt.Println(len(posts))
+	return posts
+}
 
+func getPost(postid string) (*models.Post, error) {
+
+	q := "SELECT * FROM POSTS WHERE ID = ? LIMIT 1"
+
+	m := map[string]interface{}{}
+	itr := storage.Session.Query(q, postid).Consistency(gocql.EachQuorum).Iter()
+
+	for itr.MapScan(m) {
+		post := &models.Post{}
+		// post.Title = m["title"].(string)
+		post.Content = m["content"].(string)
+		post.PostId = m["id"].(string)
+		// post.Tags = m["tags"].([]string)
+		post.Timestamp = m["timestamp"].(time.Time)
+
+		return post, nil
 	}
 
-	data, merr := json.Marshal(result)
-	if merr != nil {
-		resp.WriteHeader(http.StatusInternalServerError)
-		return
-
-	}
-	resp.WriteHeader(http.StatusOK)
-	resp.Write(data)
+	return nil, errors.New("document not found")
 
 }

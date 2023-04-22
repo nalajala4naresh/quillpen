@@ -2,7 +2,10 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "posts",
-    srcs = ["posts.go"],
+    srcs = [
+        "handlers.go",
+        "posts.go",
+    ],
     importpath = "github.com/quillpen/posts",
     visibility = ["//visibility:public"],
     deps = [

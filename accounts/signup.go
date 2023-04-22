@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"github.com/quillpen/models"
-	"github.com/quillpen/storage"
 
 	
 )
@@ -33,11 +32,11 @@ func SignUpHandler(resp http.ResponseWriter, req *http.Request) {
 	
 
 	// check if account exists based on email address
-	existing_account, lerr := storage.GetAccount(new_account.Email)
-	if errors.Is(lerr, storage.ACCOUNT_NOT_FOUND) {
+	existing_account, lerr := getAccount(new_account.Email)
+	if errors.Is(lerr, ACCOUNT_NOT_FOUND) {
 		// bcrypt the password
 	new_account.Hash()
-		cerr := storage.CreateAccount(new_account)
+		cerr := createAccount(new_account)
 		if cerr != nil {
             resp.WriteHeader(http.StatusInternalServerError)
 			resp.Write([]byte("Please retry again Later !"))

@@ -1,33 +1,34 @@
-package storage
+package accounts
 
 import (
 	"errors"
 	"fmt"
+
 	"github.com/quillpen/models"
+	"github.com/quillpen/storage"
 
 	"github.com/gocql/gocql"
 )
 
-var ACCOUNT_NOT_FOUND = errors.New("Account not found")
-var CAN_NOT_CREATE_ACCOUNT = errors.New("Account creation failed")
+var (
+	ACCOUNT_NOT_FOUND      = errors.New("Account not found")
+	CAN_NOT_CREATE_ACCOUNT = errors.New("Account creation failed")
+)
 
-func CreateAccount(account models.Profile) error {
-
+func createAccount(account models.Profile) error {
 	q := "INSERT INTO ACCOUNTS (fullname,userhandle, email, password) VALUES(?,?,?,?)"
-	query := Session.Query(q, account.Fullname, account.Userhandle, account.Email, account.Password)
+	query := storage.Session.Query(q, account.Fullname, account.Userhandle, account.Email, account.Password)
 	fmt.Println(query.String())
 	err := query.Consistency(gocql.Quorum).Exec()
 	if err != nil {
 		return CAN_NOT_CREATE_ACCOUNT
-
 	}
 	return nil
-
 }
 
-func GetAccount(id string) (*models.Profile, error) {
+func getAccount(id string) (*models.Profile, error) {
 	q := "SELECT * FROM ACCOUNTS WHERE email = ? LIMIT 1"
-	iter := Session.Query(q, id).Consistency(gocql.Quorum).Iter()
+	iter := storage.Session.Query(q, id).Consistency(gocql.Quorum).Iter()
 	m := map[string]interface{}{}
 	for iter.MapScan(m) {
 
@@ -41,5 +42,4 @@ func GetAccount(id string) (*models.Profile, error) {
 
 	}
 	return nil, ACCOUNT_NOT_FOUND
-
 }

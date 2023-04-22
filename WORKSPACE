@@ -18,7 +18,7 @@ http_archive(
     ],
 )
 
-load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies","go_download_sdk")
+load("@io_bazel_rules_go//go:deps.bzl", "go_download_sdk", "go_register_toolchains", "go_rules_dependencies")
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 ############################################################
@@ -27,13 +27,10 @@ load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 # The first declaration of an external repository "wins".
 ############################################################
 
-
-
 go_download_sdk(
     name = "go_sdk",
-    goos = "darwin",
     goarch = "amd64",
-    version = "1.18.10",
+    goos = "darwin",
     sdks = {
         # NOTE: In most cases the whole sdks attribute is not needed.
         # There are 2 "common" reasons you might want it:
@@ -47,11 +44,16 @@ go_download_sdk(
         "linux_amd64": ("go1.18.10.linux-amd64.tar.gz", "5e05400e4c79ef5394424c0eff5b9141cb782da25f64f79d54c98af0a37f8d49"),
         "darwin_amd64": ("go1.18.10.darwin-amd64.tar.gz", "5614904f2b0b546b1493f294122fea7d67b2fbfc2efe84b1ab560fb678502e1f"),
     },
+    version = "1.18.10",
 )
 
+load("//:deps.bzl", "go_dependencies")
+
+# gazelle:repository_macro deps.bzl%go_dependencies
+go_dependencies()
 
 go_rules_dependencies()
+
 go_register_toolchains()
 
 gazelle_dependencies()
-

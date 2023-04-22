@@ -33,7 +33,7 @@ func init() {
 	consistency := func(con string) gocql.Consistency {
 		cc, err := gocql.MustParseConsistency(con)
 		if err != nil {
-			return gocql.All
+			return gocql.Quorum
 		}
 		return cc
 	}

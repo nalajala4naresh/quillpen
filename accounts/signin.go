@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"github.com/quillpen/models"
-	"github.com/quillpen/storage"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -20,7 +19,7 @@ func SignInHandler(resp http.ResponseWriter, req *http.Request) {
 	decoder.Decode(&given_account)
 		
 	
-	account, err := storage.GetAccount(given_account.Email)
+	account, err := getAccount(given_account.Email)
 	if err == nil {
 		existing_account := account
 		// Password comparison
@@ -45,7 +44,7 @@ func SignInHandler(resp http.ResponseWriter, req *http.Request) {
 
 		}
 		
-	} else if errors.Is(err,storage.ACCOUNT_NOT_FOUND) {
+	} else if errors.Is(err,ACCOUNT_NOT_FOUND) {
 
 		resp.WriteHeader(http.StatusNotFound)
 		
