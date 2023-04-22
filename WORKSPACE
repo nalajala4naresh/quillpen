@@ -33,7 +33,7 @@ go_download_sdk(
     name = "go_sdk",
     goos = "darwin",
     goarch = "amd64",
-    version = "1.19.8",
+    version = "1.18.10",
     sdks = {
         # NOTE: In most cases the whole sdks attribute is not needed.
         # There are 2 "common" reasons you might want it:
@@ -44,8 +44,8 @@ go_download_sdk(
         # 2. You want to avoid the dependency on the index file for the
         #    SHA-256 checksums. In this case, You can get the expected
         #    filenames and checksums from https://go.dev/dl/
-        "linux_amd64": ("go1.19.8.linux-amd64.tar.gz", "e1a0bf0ab18c8218805a1003fd702a41e2e807710b770e787e5979d1cf947aba"),
-        "darwin_amd64": ("go1.19.8.darwin-amd64.tar.gz", "d63e12909b3639df24f2614284868869ce14fdea2059ed365752da82ca59f994"),
+        "linux_amd64": ("go1.18.10.linux-amd64.tar.gz", "5e05400e4c79ef5394424c0eff5b9141cb782da25f64f79d54c98af0a37f8d49"),
+        "darwin_amd64": ("go1.18.10.darwin-amd64.tar.gz", "5614904f2b0b546b1493f294122fea7d67b2fbfc2efe84b1ab560fb678502e1f"),
     },
 )
 
