@@ -11,6 +11,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//models",
-        "@com_github_gocql_gocql//:gocql",
+        "@com_github_gocql_gocql//:go_default_library",
     ],
 )

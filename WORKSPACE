@@ -18,7 +18,7 @@ http_archive(
     ],
 )
 
-load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
+load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies","go_download_sdk")
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 ############################################################
@@ -27,13 +27,31 @@ load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 # The first declaration of an external repository "wins".
 ############################################################
 
-load("//:deps.bzl", "go_dependencies")
 
-# gazelle:repository_macro deps.bzl%go_dependencies
-go_dependencies()
+
+go_download_sdk(
+    name = "go_sdk",
+    goos = "darwin",
+    goarch = "amd64",
+    version = "1.19.8",
+    sdks = {
+        # NOTE: In most cases the whole sdks attribute is not needed.
+        # There are 2 "common" reasons you might want it:
+        #
+        # 1. You need to use an modified GO SDK, or an unsupported version
+        #    (for example, a beta or release candidate)
+        #
+        # 2. You want to avoid the dependency on the index file for the
+        #    SHA-256 checksums. In this case, You can get the expected
+        #    filenames and checksums from https://go.dev/dl/
+        "linux_amd64": ("go1.19.8.linux-amd64.tar.gz", "e1a0bf0ab18c8218805a1003fd702a41e2e807710b770e787e5979d1cf947aba"),
+        "darwin_amd64": ("go1.19.8.darwin-amd64.tar.gz", "d63e12909b3639df24f2614284868869ce14fdea2059ed365752da82ca59f994"),
+    },
+)
+
 
 go_rules_dependencies()
-
-go_register_toolchains(version = "1.19.5")
+go_register_toolchains()
 
 gazelle_dependencies()
+

@@ -1,4 +1,4 @@
-module quillpen
+module github.com/quillpen
 
 go 1.16
 

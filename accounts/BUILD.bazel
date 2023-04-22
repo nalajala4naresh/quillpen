@@ -11,6 +11,6 @@ go_library(
     deps = [
         "//models",
         "//storage",
-        "@org_golang_x_crypto//bcrypt",
+        "@org_golang_x_crypto//bcrypt:go_default_library",
     ],
 )

@@ -8,7 +8,7 @@ go_library(
     deps = [
         "//models",
         "//storage",
-        "@com_github_gocql_gocql//:gocql",
-        "@com_github_gorilla_mux//:mux",
+        "@com_github_gocql_gocql//:go_default_library",
+        "@com_github_gorilla_mux//:go_default_library",
     ],
 )
