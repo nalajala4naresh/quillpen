@@ -3,7 +3,7 @@ package storage
 import (
 	"errors"
 	"fmt"
-	"quillpen/models"
+	"github.com/quillpen/models"
 
 	"github.com/gocql/gocql"
 )

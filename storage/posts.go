@@ -2,8 +2,9 @@ package storage
 
 import (
 	"errors"
+	"fmt"
 	"log"
-	"quillpen/models"
+	"github.com/quillpen/models"
 	"time"
 
 	"github.com/gocql/gocql"
@@ -14,7 +15,7 @@ func CreatePost(post models.Post) error {
 
 	q := "INSERT INTO POSTS (id, content,author,timestamp) VALUES (?, ?, ?,?)"
     query := Session.Query(q, post.PostId, post.Content, post.Author,post.Timestamp)
-	err := query.Exec()
+	err := query.Consistency(gocql.Quorum).Exec()
 	if err != nil {
 		log.Printf("ERROR: fail create post, %s", err.Error())
 	}
@@ -32,7 +33,7 @@ func ListPosts() []*models.Post {
 	itr := Session.Query(q).Consistency(gocql.Quorum).Iter()
 	var posts []*models.Post
 	for itr.MapScan(m) {
-		post := &models.Post{}
+		post := new(models.Post)
 		// post.Title = m["title"].(string)
 		post.Content = m["content"].(string)
 		post.PostId = m["id"].(string)
@@ -42,6 +43,7 @@ func ListPosts() []*models.Post {
 		posts = append(posts, post)
 	}
 	// handle for empty database page data
+	fmt.Println(len(posts))
 	return posts
 }
 

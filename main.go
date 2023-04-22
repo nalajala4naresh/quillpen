@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"os"
 
-	"quillpen/accounts"
-	"quillpen/posts"
-	"quillpen/storage"
+	"github.com/quillpen/accounts"
+	"github.com/quillpen/posts"
+	"github.com/quillpen/storage"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
@@ -25,18 +25,15 @@ func init() {
 
 func main() {
 
-
 	router := mux.NewRouter()
 
 	// router.Schemes("https")
 
-	
 	router.HandleFunc("/signin", accounts.SignInHandler).Methods("POST")
 	router.HandleFunc("/signup", accounts.SignUpHandler).Methods("POST")
 	router.HandleFunc("/posts", posts.ListPosts).Methods("GET")
 	router.HandleFunc("/post", posts.CreatePost).Methods("POST")
 	router.HandleFunc("/post/{postid}", posts.GetPost).Methods("GET")
-
 
 	logged_handlers := handlers.LoggingHandler(os.Stdout, router)
 	contetTypeHandler := handlers.ContentTypeHandler(logged_handlers, "application/json")
@@ -57,7 +54,6 @@ func IndexHandler(resp http.ResponseWriter, req *http.Request) {
 		if post.Content == "" {
 			continue
 		}
-
 
 	}
 

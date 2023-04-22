@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "storage",
+    srcs = [
+        "accounts.go",
+        "posts.go",
+        "session.go",
+    ],
+    importpath = "github.com/quillpen/storage",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//models",
+        "@com_github_gocql_gocql//:gocql",
+    ],
+)

@@ -2,7 +2,7 @@ package posts
 
 import (
 	"encoding/json"
-	
+
 	"html/template"
 	"io/ioutil"
 	"net/http"
@@ -11,8 +11,8 @@ import (
 	_ "github.com/gocql/gocql"
 	"github.com/gorilla/mux"
 
-	"quillpen/models"
-	"quillpen/storage"
+	"github.com/quillpen/models"
+	"github.com/quillpen/storage"
 )
 
 var templates *template.Template
@@ -25,12 +25,11 @@ func init() {
 
 func CreatePost(resp http.ResponseWriter, req *http.Request) {
 
-
 	var post models.Post
 
 	defer req.Body.Close()
 	data, _ := ioutil.ReadAll(req.Body)
-	json.Unmarshal(data,&post)
+	json.Unmarshal(data, &post)
 
 	// fill th post details
 	post.Timestamp = time.Now()
@@ -42,7 +41,6 @@ func CreatePost(resp http.ResponseWriter, req *http.Request) {
 	}
 	resp.WriteHeader(http.StatusOK)
 
-
 }
 
 func ListPosts(resp http.ResponseWriter, req *http.Request) {
@@ -52,28 +50,25 @@ func ListPosts(resp http.ResponseWriter, req *http.Request) {
 		return
 
 	}
-	var cleanedPosts []models.Post
+	var cleanedPosts []*models.Post
 	for _, post := range result_set {
 
 		if (*post).Content == "" {
 			continue
 		}
 
-		cleanedPosts = append(cleanedPosts, *post)
+		cleanedPosts = append(cleanedPosts, post)
 
 	}
-	data , err := json.Marshal(cleanedPosts)
+	data, err := json.Marshal(cleanedPosts)
 	if err != nil {
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
-
 
 	}
 
 	resp.WriteHeader(http.StatusOK)
 	resp.Write(data)
-
-
 
 }
 
@@ -89,12 +84,10 @@ func GetPost(resp http.ResponseWriter, req *http.Request) {
 
 	}
 
-	
-	data , merr := json.Marshal(result)
+	data, merr := json.Marshal(result)
 	if merr != nil {
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
-
 
 	}
 	resp.WriteHeader(http.StatusOK)

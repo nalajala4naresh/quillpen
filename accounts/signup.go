@@ -7,8 +7,8 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
-	"quillpen/models"
-	"quillpen/storage"
+	"github.com/quillpen/models"
+	"github.com/quillpen/storage"
 
 	
 )

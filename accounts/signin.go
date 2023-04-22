@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"quillpen/models"
-	"quillpen/storage"
+	"github.com/quillpen/models"
+	"github.com/quillpen/storage"
 
 	"golang.org/x/crypto/bcrypt"
 )
