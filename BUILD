@@ -33,5 +33,13 @@ go_library(
 go_binary(
     name = "quillpen",
     embed = [":quillpen_lib"],
+    data = [":html_templates"],
     visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "html_templates",
+    srcs = glob(
+        ["**/*.html"]
+    ) 
 )
