@@ -2,12 +2,10 @@ package accounts
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/quillpen/models"
 	"github.com/quillpen/storage"
 
-	"github.com/gocql/gocql"
 )
 
 var (
@@ -17,9 +15,7 @@ var (
 
 func createAccount(account models.Profile) error {
 	q := "INSERT INTO ACCOUNTS (fullname,userhandle, email, password) VALUES(?,?,?,?)"
-	query := storage.Session.Query(q, account.Fullname, account.Userhandle, account.Email, account.Password)
-	fmt.Println(query.String())
-	err := query.Consistency(gocql.Quorum).Exec()
+	_, err := storage.Cassandra.Create(q, account.Fullname, account.Userhandle, account.Email, account.Password)
 	if err != nil {
 		return CAN_NOT_CREATE_ACCOUNT
 	}
@@ -28,18 +24,17 @@ func createAccount(account models.Profile) error {
 
 func getAccount(id string) (*models.Profile, error) {
 	q := "SELECT * FROM ACCOUNTS WHERE email = ? LIMIT 1"
-	iter := storage.Session.Query(q, id).Consistency(gocql.Quorum).Iter()
-	m := map[string]interface{}{}
-	for iter.MapScan(m) {
 
-		account := &models.Profile{}
-		account.Fullname = m["fullname"].(string)
-		account.Email = m["email"].(string)
-		account.Password = m["password"].(string)
-		account.Userhandle = m["userhandle"].(string)
-
-		return account, nil
-
+	raccount, err := storage.Cassandra.Get(q, id)
+	if err != nil {
+		return nil, err
 	}
-	return nil, ACCOUNT_NOT_FOUND
+
+	account := &models.Profile{}
+	account.Fullname = raccount["fullname"].(string)
+	account.Email = raccount["email"].(string)
+	account.Password = raccount["password"].(string)
+	account.Userhandle = raccount["userhandle"].(string)
+
+	return account, nil
 }

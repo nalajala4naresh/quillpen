@@ -8,11 +8,7 @@ import (
 	"os"
 )
 
-const (
-	caFilePath     = "rds-combined-ca-bundle.pem"
-	connectTimeout = 5
-	queryTimeout   = 30
-)
+var Cassandra Store
 
 type CassandraConfig struct {
 	host       string
@@ -27,6 +23,20 @@ var cassandraConfig = CassandraConfig{
 	keyspace:   getEnv("CASSANDRA_KEYSPACE", "quillpen"),
 	conistency: getEnv("CASSANDRA_CONSISTANCY", "LOCAL_QUORUM"),
 }
+
+func init() {
+	var err error
+	Cassandra, err = NewCassandraStore(&cassandraConfig)
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
+const (
+	caFilePath     = "rds-combined-ca-bundle.pem"
+	connectTimeout = 5
+	queryTimeout   = 30
+)
 
 func getEnv(key, fallback string) string {
 	if val, ok := os.LookupEnv(key); ok {

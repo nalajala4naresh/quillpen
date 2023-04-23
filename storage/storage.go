@@ -1,8 +1,6 @@
 package storage
 
 import (
-	"errors"
-	"fmt"
 	"log"
 	"strconv"
 
@@ -10,13 +8,13 @@ import (
 )
 
 type Store interface {
-	Get(query string) (map[string]interface{}, error)
-	List(query string) ([]map[string]interface{}, error)
-	Delete(query string) (map[string]interface{}, error)
-	Create(query string) (map[string]interface{}, error)
+	Get(query string,values ...interface{}) (map[string]interface{}, error)
+	List(query string,values ...interface{}) ([]map[string]interface{}, error)
+	Delete(query string,values ...interface{}) error
+	Create(query string,values ...interface{}) (map[string]interface{}, error)
 }
 
-func New(config *CassandraConfig) (Store, error) {
+func NewCassandraStore(config *CassandraConfig) (Store, error) {
 	port := func(p string) int {
 		iport, err := strconv.Atoi(p)
 		if err != nil {
@@ -37,6 +35,7 @@ func New(config *CassandraConfig) (Store, error) {
 	cluster.Port = port(cassandraConfig.port)
 	cluster.Keyspace = cassandraConfig.keyspace
 	cluster.Consistency = consistency(cassandraConfig.conistency)
+	cluster.Authenticator = gocql.PasswordAuthenticator{Username: "cassandra",Password: "cassandra"}
 
 	s, err := cluster.CreateSession()
 	if err != nil {
@@ -51,24 +50,55 @@ type CassandraStore struct {
 	session *gocql.Session
 }
 
-func (c *CassandraStore) Get(query string) (map[string]interface{}, error) {
+func (c *CassandraStore) Get(query string, values ...interface{}) (map[string]interface{}, error) {
 	m := map[string]interface{}{}
-	itr := c.session.Query(query).Consistency(gocql.EachQuorum).Iter()
+	itr := c.session.Query(query,values...).Consistency(gocql.EachQuorum).Iter()
 
 	for itr.MapScan(m) {
-		return m, nil
+		break
 	}
-	return nil, errors.New(fmt.Sprintf("Get Query Failed %s ", query))
+	err := itr.Close()
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
 }
 
-func (c *CassandraStore) List(query string) ([]map[string]interface{}, error) {
-	return nil, nil
+func (c *CassandraStore) List(query string, values ...interface{}) ([]map[string]interface{}, error) {
+	result := make([]map[string]interface{}, 10)
+
+	itr := c.session.Query(query,values...).Consistency(gocql.EachQuorum).Iter()
+
+	for {
+		entity := make(map[string]interface{})
+		isend := itr.Scan(entity)
+		if isend {
+			break
+		}
+		result = append(result, entity)
+
+	}
+	err := itr.Close()
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
-func (c *CassandraStore) Create(query string) (map[string]interface{}, error) {
-	return nil, nil
+func (c *CassandraStore) Create(query string, values ...interface{}) (map[string]interface{}, error) {
+	itr := c.session.Query(query,values...).Consistency(gocql.EachQuorum).Iter()
+	entity := make(map[string]interface{})
+	for itr.MapScan(entity) {
+		break
+	}
+	err := itr.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return entity, nil
 }
 
-func (c *CassandraStore) Delete(query string) (map[string]interface{}, error) {
-	return nil, nil
+func (c *CassandraStore) Delete(query string, values ...interface{}) error {
+	return nil
 }

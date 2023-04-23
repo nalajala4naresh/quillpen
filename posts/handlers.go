@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	_ "github.com/gocql/gocql"
 	"github.com/gorilla/mux"
 
 	"github.com/quillpen/models"
@@ -44,8 +43,10 @@ func CreatePost(resp http.ResponseWriter, req *http.Request) {
 
 func ListPosts(resp http.ResponseWriter, req *http.Request) {
 
-	result_set := listPosts()
-	if result_set == nil {
+	result_set, err := listPosts()
+	if err != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+		resp.Write([]byte(err.Error()))
 		return
 
 	}

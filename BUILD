@@ -24,9 +24,9 @@ go_library(
     deps = [
         "//accounts",
         "//posts",
-        "@com_github_gorilla_handlers//:go_default_library",
-        "@com_github_gorilla_mux//:go_default_library",
-        "@com_github_gorilla_sessions//:go_default_library",
+        "@com_github_gorilla_handlers//:handlers",
+        "@com_github_gorilla_mux//:mux",
+        "@com_github_gorilla_sessions//:sessions",
     ],
 )
 
