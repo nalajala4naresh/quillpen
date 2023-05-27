@@ -12,6 +12,7 @@ type Store interface {
 	List(query string,values ...interface{}) ([]map[string]interface{}, error)
 	Delete(query string,values ...interface{}) error
 	Create(query string,values ...interface{}) (map[string]interface{}, error)
+	Update(query string, values ...interface{}) (map[string]interface{}, error)
 }
 
 func NewCassandraStore(config *CassandraConfig) (Store, error) {
@@ -86,6 +87,20 @@ func (c *CassandraStore) List(query string, values ...interface{}) ([]map[string
 }
 
 func (c *CassandraStore) Create(query string, values ...interface{}) (map[string]interface{}, error) {
+	itr := c.session.Query(query,values...).Consistency(gocql.EachQuorum).Iter()
+	entity := make(map[string]interface{})
+	for itr.MapScan(entity) {
+		break
+	}
+	err := itr.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	return entity, nil
+}
+
+func (c *CassandraStore) Update(query string, values ...interface{}) (map[string]interface{}, error) {
 	itr := c.session.Query(query,values...).Consistency(gocql.EachQuorum).Iter()
 	entity := make(map[string]interface{})
 	for itr.MapScan(entity) {

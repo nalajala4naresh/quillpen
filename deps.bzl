@@ -142,8 +142,8 @@ def go_dependencies():
     go_repository(
         name = "org_golang_x_sys",
         importpath = "golang.org/x/sys",
-        sum = "h1:SrN+KX8Art/Sf4HNj6Zcz06G7VEz+7w9tdXTPOZ7+l4=",
-        version = "v0.0.0-20210615035016-665e8c7367d1",
+        sum = "h1:MVltZSvRTcU2ljQOhs94SXPftV6DCNnZViHeQps87pQ=",
+        version = "v0.6.0",
     )
     go_repository(
         name = "org_golang_x_term",

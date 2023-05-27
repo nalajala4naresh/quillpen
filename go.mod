@@ -13,6 +13,9 @@ require (
 
 require (
 	github.com/felixge/httpsnoop v1.0.1 // indirect
+	github.com/gobwas/httphead v0.1.0 // indirect
+	github.com/gobwas/pool v0.2.1 // indirect
+	github.com/gobwas/ws v1.2.1 // indirect
 	github.com/golang/snappy v0.0.3 // indirect
 	github.com/gorilla/securecookie v1.1.1 // indirect
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect

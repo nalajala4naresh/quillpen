@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "chat",
+    srcs = [
+        "chat.go",
+        "hub.go",
+    ],
+    importpath = "github.com/quillpen/chat",
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_gobwas_ws//:ws",
+        "@com_github_gobwas_ws//wsutil",
+    ],
+)

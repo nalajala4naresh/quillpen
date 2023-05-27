@@ -19,7 +19,7 @@ http_archive(
 )
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_download_sdk", "go_register_toolchains", "go_rules_dependencies")
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 
 ############################################################
 # Define your own dependencies here using go_repository.
@@ -41,13 +41,34 @@ go_download_sdk(
         # 2. You want to avoid the dependency on the index file for the
         #    SHA-256 checksums. In this case, You can get the expected
         #    filenames and checksums from https://go.dev/dl/
-        "linux_amd64": ("go1.18.10.linux-amd64.tar.gz", "5e05400e4c79ef5394424c0eff5b9141cb782da25f64f79d54c98af0a37f8d49"),
-        "darwin_amd64": ("go1.18.10.darwin-amd64.tar.gz", "5614904f2b0b546b1493f294122fea7d67b2fbfc2efe84b1ab560fb678502e1f"),
+        "linux_amd64": ("go1.19.3.linux-amd64.tar.gz", "74b9640724fd4e6bb0ed2a1bc44ae813a03f1e72a4c76253e2d5c015494430ba"),
+        "darwin_amd64": ("go1.19.3.darwin-amd64.tar.gz", "7fa09a9a34cb6f794e61e9ada1d6d18796f936a2b35f22724906cad71396e590"),
     },
-    version = "1.18.10",
+    version = "1.19.3",
 )
 
 load("//:deps.bzl", "go_dependencies")
+
+go_repository(
+    name = "com_github_gobwas_httphead",
+    importpath = "github.com/gobwas/httphead",
+    sum = "h1:exrUm0f4YX0L7EBwZHuCF4GDp8aJfVeBrlLQrs6NqWU=",
+    version = "v0.1.0",
+)
+
+go_repository(
+    name = "com_github_gobwas_pool",
+    importpath = "github.com/gobwas/pool",
+    sum = "h1:xfeeEhW7pwmX8nuLVlqbzVc7udMDrwetjEv+TZIz1og=",
+    version = "v0.2.1",
+)
+
+go_repository(
+    name = "com_github_gobwas_ws",
+    importpath = "github.com/gobwas/ws",
+    sum = "h1:F2aeBZrm2NDsc7vbovKrWSogd4wvfAxg0FQ89/iqOTk=",
+    version = "v1.2.1",
+)
 
 # gazelle:repository_macro deps.bzl%go_dependencies
 go_dependencies()
@@ -57,3 +78,26 @@ go_rules_dependencies()
 go_register_toolchains()
 
 gazelle_dependencies()
+
+# rules_docker
+
+http_archive(
+    name = "io_bazel_rules_docker",
+    sha256 = "b1e80761a8a8243d03ebca8845e9cc1ba6c82ce7c5179ce2b295cd36f7e394bf",
+    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.25.0/rules_docker-v0.25.0.tar.gz"],
+)
+
+load(
+    "@io_bazel_rules_docker//repositories:repositories.bzl",
+    container_repositories = "repositories",
+)
+
+container_repositories()
+
+load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
+
+container_deps()
+
+load("@io_bazel_rules_docker//go:image.bzl", go_image_repos = "repositories")
+
+go_image_repos()

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/quillpen/accounts"
+	"github.com/quillpen/chat"
 	"github.com/quillpen/posts"
 
 	"github.com/gorilla/handlers"
@@ -31,6 +32,7 @@ func main() {
 	router.HandleFunc("/post", posts.CreatePost).Methods("POST")
 	router.HandleFunc("/post/{postid}", posts.GetPost).Methods("GET")
 	router.HandleFunc("/", IndexHandler)
+	router.HandleFunc("/chat", chat.ChatHandler)
 	logged_handlers := handlers.LoggingHandler(os.Stdout, router)
 	contetTypeHandler := handlers.ContentTypeHandler(logged_handlers, "application/json")
 	compressedHandlers := handlers.CompressHandler(contetTypeHandler)

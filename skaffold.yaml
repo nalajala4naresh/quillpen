@@ -1,0 +1,24 @@
+apiVersion: skaffold/v4beta2
+kind: Config 
+metadata:
+  name: quillpen
+
+requires:
+  - configs: ["cassandra"]
+build:
+  artifacts:
+    - image: quillpen
+      bazel:
+        target: //:quill_image.tar
+
+
+---
+
+apiVersion: skaffold/v4beta2
+kind: Config
+metadata:
+  name: cassandra
+deploy:
+  docker:
+    images: ["bitnami/cassandra:4.1.1"]
+

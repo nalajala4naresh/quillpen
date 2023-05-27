@@ -1,5 +1,6 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@bazel_gazelle//:def.bzl", "gazelle")
+load("@io_bazel_rules_docker//go:image.bzl", "go_image")
 
 gazelle(
     name = "gazelle",
@@ -23,6 +24,7 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//accounts",
+        "//chat",
         "//posts",
         "@com_github_gorilla_handlers//:handlers",
         "@com_github_gorilla_mux//:mux",
@@ -32,14 +34,26 @@ go_library(
 
 go_binary(
     name = "quillpen",
-    embed = [":quillpen_lib"],
     data = [":html_templates"],
+    embed = [":quillpen_lib"],
     visibility = ["//visibility:public"],
 )
 
 filegroup(
     name = "html_templates",
     srcs = glob(
-        ["**/*.html"]
-    ) 
+        ["**/*.html"],
+    ),
+)
+
+go_image(
+    name = "quill_image",
+    binary = ":quillpen",
+    visibility = ["//visibility:public"],
+)
+
+alias(
+    name = "go",
+    actual = "@go_sdk//:bin/go",
+    visibility = ["//visibility:public"],
 )
