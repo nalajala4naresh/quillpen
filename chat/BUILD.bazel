@@ -11,5 +11,6 @@ go_library(
     deps = [
         "@com_github_gobwas_ws//:ws",
         "@com_github_gobwas_ws//wsutil",
+        "@com_github_gocql_gocql//:gocql",
     ],
 )

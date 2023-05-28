@@ -61,16 +61,20 @@ type Account struct {
 	FullName string `json:"username" schema:"username,required" cql:"username,required"`
 }
 
-func (a *Account) GetAccount() error {
+func (a *Account) GetAccount() (*Account, error) {
 	// generate Hash of the password
 	a.Hash()
 
 	q := "SELECT * FROM  accounts WHERE email = ?"
-	err := storage.Cassandra.Session.Query(q, a.Email).Iter()
-	if err != nil {
-		return CAN_NOT_CREATE_ACCOUNT
+	iter := storage.Cassandra.Session.Query(q, a.Email).Iter()
+	var account Account
+
+	for iter.Scan(&account.Email, &account.Password, &account.FullName) {
+		// Process each row of the result
+		return &account, nil
 	}
-	return nil
+
+	return nil, ACCOUNT_NOT_FOUND
 }
 
 func (a *Account) CreateAccount() error {
@@ -98,7 +102,7 @@ func (a *Account) UpdateAccount() error {
 }
 
 func (a *Account) Hash() {
-	hashed_pass, error := bcrypt.GenerateFromPassword([]byte(s.Password), bcrypt.DefaultCost)
+	hashed_pass, error := bcrypt.GenerateFromPassword([]byte(a.Password), bcrypt.DefaultCost)
 	if error != nil {
 		panic("unable to hash password")
 	}

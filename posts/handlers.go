@@ -2,28 +2,22 @@ package posts
 
 import (
 	"encoding/json"
-
 	"html/template"
 	"io/ioutil"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
-
-	"github.com/quillpen/models"
 )
 
 var templates *template.Template
 
 func init() {
-
 	templates = template.Must(template.ParseFiles("templates/posts.html"))
-
 }
 
 func CreatePost(resp http.ResponseWriter, req *http.Request) {
-
-	var post models.Post
+	var post Post
 
 	defer req.Body.Close()
 	data, _ := ioutil.ReadAll(req.Body)
@@ -32,35 +26,24 @@ func CreatePost(resp http.ResponseWriter, req *http.Request) {
 	// fill th post details
 	post.Timestamp = time.Now()
 	// now save the html bytes to Storage
-	cerr := createPost(post)
+	cerr := post.CreatePost()
 	if cerr != nil {
 		resp.WriteHeader(http.StatusInternalServerError)
-
 	}
 	resp.WriteHeader(http.StatusOK)
-
 }
 
 func ListPosts(resp http.ResponseWriter, req *http.Request) {
-
-	result_set, err := listPosts()
+	var posts Post
+	result_set, err := posts.ListPosts()
 	if err != nil {
 		resp.WriteHeader(http.StatusInternalServerError)
 		resp.Write([]byte(err.Error()))
 		return
 
 	}
-	var cleanedPosts []*models.Post
-	for _, post := range result_set {
 
-		if (*post).Content == "" {
-			continue
-		}
-
-		cleanedPosts = append(cleanedPosts, post)
-
-	}
-	data, err := json.Marshal(cleanedPosts)
+	data, err := json.Marshal(result_set)
 	if err != nil {
 		resp.WriteHeader(http.StatusInternalServerError)
 		return
@@ -69,14 +52,15 @@ func ListPosts(resp http.ResponseWriter, req *http.Request) {
 
 	resp.WriteHeader(http.StatusOK)
 	resp.Write(data)
-
 }
 
 func GetPost(resp http.ResponseWriter, req *http.Request) {
-
 	uri_params := mux.Vars(req)
 
-	result, err := getPost(uri_params["postid"])
+	var post Post
+	post.PostId = uri_params["postid"]
+
+	result, err := post.GetPost()
 	if err != nil {
 
 		http.NotFound(resp, req)
@@ -92,5 +76,4 @@ func GetPost(resp http.ResponseWriter, req *http.Request) {
 	}
 	resp.WriteHeader(http.StatusOK)
 	resp.Write(data)
-
 }

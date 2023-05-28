@@ -10,8 +10,8 @@ go_library(
     importpath = "github.com/quillpen/accounts",
     visibility = ["//visibility:public"],
     deps = [
-        "//models",
         "//storage",
+        "@com_github_gocql_gocql//:gocql",
         "@org_golang_x_crypto//bcrypt",
     ],
 )

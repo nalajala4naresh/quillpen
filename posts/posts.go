@@ -1,7 +1,6 @@
 package posts
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -9,8 +8,7 @@ import (
 )
 
 type Post struct {
-	PostId string `json:"id" cql:"id"`
-	// Title     string     `json:"" cql:"title"`
+	PostId    string    `json:"id" cql:"id"`
 	Content   string    `json:"content" cql:"content"`
 	Author    string    `json:"author" cql:"-"`
 	Timestamp time.Time `json:"-" cql:"timestamp"`
@@ -22,9 +20,9 @@ func (s *Post) ModelType() string {
 }
 
 // publishing new post
-func createPost(post Post) error {
+func (s *Post) CreatePost() error {
 	q := "INSERT INTO POSTS (id, content,author,timestamp) VALUES (?, ?, ?,?)"
-	_, err := storage.Cassandra.Create(q, post.PostId, post.Content, post.Author, post.Timestamp)
+	err := storage.Cassandra.Session.Query(q, s.PostId, s.Content, s.Author, s.Timestamp).Exec()
 	if err != nil {
 		log.Printf("ERROR: fail create post, %s", err.Error())
 	}
@@ -33,43 +31,38 @@ func createPost(post Post) error {
 }
 
 // listing top posts per category
-func listPosts() ([]*Post, error) {
+func (s *Post) ListPosts() ([]*Post, error) {
 	q := "SELECT * FROM POSTS LIMIT 20"
 
-	rawposts, err := storage.Cassandra.List(q)
-	if err != nil {
-		return nil, err
-	}
-	var posts []*Post
-	for _, rawpost := range rawposts {
+	rawposts := storage.Cassandra.Session.Query(q, s.PostId, s.Content, s.Author, s.Timestamp).Iter()
+	defer rawposts.Close()
+
+	posts := make([]*Post, rawposts.NumRows())
+	scanner := rawposts.Scanner()
+
+	for scanner.Next() {
+		scanner.Scan()
 		post := new(Post)
-		// post.Title = m["title"].(string)
-		post.Content = rawpost["content"].(string)
-		post.PostId = rawpost["id"].(string)
-		// post.Tags = m["tags"].([]string)
-		// post.Timestamp = m["timestamp"].(time.Time)
+		err := scanner.Scan(&post.PostId, &post.Content, &post.Timestamp, &post.Tags)
+		if err != nil {
+			return nil, err
+		}
 
 		posts = append(posts, post)
 	}
-	// handle for empty database page data
-	fmt.Println(len(posts))
 	return posts, nil
 }
 
-func getPost(postid string) (*Post, error) {
+func (s *Post) GetPost() (*Post, error) {
 	q := "SELECT * FROM POSTS WHERE ID = ? LIMIT 1"
 
-	rpost, err := storage.Cassandra.Get(q, postid)
-	if err != nil {
-		return nil, err
-	}
+	iter := storage.Cassandra.Session.Query(q, s.PostId).Iter()
 
 	post := Post{}
 	// post.Title = m["title"].(string)
-	post.Content = rpost["content"].(string)
-	post.PostId = rpost["id"].(string)
-	// post.Tags = m["tags"].([]string)
-	post.Timestamp = rpost["timestamp"].(time.Time)
+	for iter.Scan(&post.PostId, &post.Content, &post.Timestamp, &post.Tags) {
+		break
+	}
 
 	return &post, nil
 }

@@ -26,7 +26,6 @@ func initCaassandra() {
 
 	cluster := gocql.NewCluster(cassandraConfig.host)
 	cluster.Port = port(cassandraConfig.port)
-	cluster.Keyspace = cassandraConfig.keyspace
 	cluster.Consistency = consistency(cassandraConfig.conistency)
 	cluster.Authenticator = gocql.PasswordAuthenticator{Username: "cassandra", Password: "cassandra"}
 
@@ -65,16 +64,14 @@ func initCaassandra() {
 	}
 
 	// create message table if does not exist
-	if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.messages (
-		conversation_id UUID,
-		message_id UUID,
-		sender_id UUID,
-		reciepent_id UUID,
-		message text, 
-		timestamp timestamp,
-		PRIMARY KEY (conversation_id, timestamp,message_id ) 
-
-	) WITH CLUSTERING ORDER BY (timestamp DESC);`); err != nil {
-		log.Fatalf("Failed to create messages table %s:", err)
-	}
+	// if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.messages (
+	// 	conversation_id UUID,
+	// 	message_id UUID,
+	// 	sender_id UUID,
+	// 	recipient_id UUID,
+	// 	message text, 
+	// 	time_stamp timestamp,
+	// 	PRIMARY KEY (conversation_id, time_stamp, message_id)) WITH CLUSTERING ORDER BY (time_stamp DESC)`); err != nil {
+	// 	log.Fatalf("Failed to create messages table %s:", err)
+	// }
 }

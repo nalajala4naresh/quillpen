@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-var Cassandra Store
+var Cassandra *CassandraStore
 
 type CassandraConfig struct {
 	host       string

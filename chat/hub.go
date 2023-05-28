@@ -1,18 +1,22 @@
 package chat
 
 import (
+	"encoding/json"
+	"log"
 	"net"
 
 	"github.com/gobwas/ws/wsutil"
+	"github.com/gocql/gocql"
 )
 
-func NewClient(conn net.Conn) *Client {
-	return &Client{conn: conn, send: make(chan []byte)}
+func NewClient(conn net.Conn, id gocql.UUID) *Client {
+	return &Client{conn: conn, send: make(chan ChatMessage), userId: id}
 }
 
 type Client struct {
-	conn net.Conn
-	send chan []byte
+	conn   net.Conn
+	send   chan ChatMessage
+	userId gocql.UUID
 }
 
 func (c *Client) read(hub *Hub) {
@@ -23,11 +27,20 @@ func (c *Client) read(hub *Hub) {
 
 	for {
 
-		message, _, err := wsutil.ReadClientData(c.conn)
+		var mess ChatMessage
+
+		rmess, _, err := wsutil.ReadClientData(c.conn)
 		if err != nil {
 			break
 		}
-		hub.broadcast <- message
+		err = json.Unmarshal(rmess, &mess)
+		if err != nil {
+			// Invalid chat message format
+			log.Printf("%s", err)
+			break
+		}
+		// extract the conversation from message and write it to the cassaandra
+		hub.broadcast <- mess
 	}
 }
 
@@ -35,8 +48,14 @@ func (c *Client) write(hub *Hub) {
 	defer c.conn.Close()
 
 	for message := range c.send {
+		bmess, err := json.Marshal(message)
+		if err != nil {
+			// json Marshalling error
+			log.Printf("%s", err)
+			break
+		}
+		err = wsutil.WriteServerBinary(c.conn, bmess)
 
-		err := wsutil.WriteServerBinary(c.conn, message)
 		if err != nil {
 			// data loss due to channels
 			break
@@ -46,41 +65,47 @@ func (c *Client) write(hub *Hub) {
 }
 
 type Hub struct {
-	clients    map[*Client]bool
+	clients    map[gocql.UUID]*Client
 	register   chan *Client
 	unregister chan *Client
-	broadcast  chan []byte
+	broadcast  chan ChatMessage
 }
 
 func (h *Hub) run() {
 	for {
 		select {
 		case client := <-h.register:
-			h.clients[client] = true
+			h.clients[client.userId] = client
 		case client := <-h.unregister:
-			if _, ok := h.clients[client]; ok {
+			if _, ok := h.clients[client.userId]; ok {
 				close(client.send)
-				delete(h.clients, client)
+				delete(h.clients, client.userId)
 
 			}
 		case message := <-h.broadcast:
-			for client := range h.clients {
-				select {
-				case client.send <- message:
-				default:
-					close(client.send)
-					delete(h.clients, client)
-				}
+			client, ok := h.clients[message.RecipientId]
+			if ok {
+				client.send <- message
 			}
+
+			// write the message to database
+			err := message.SaveMessage()
+			if err != nil {
+				// data loss so closing websocket
+				close(client.send)
+				delete(h.clients, client.userId)
+
+			}
+
 		}
 	}
 }
 
 func NewHub() *Hub {
 	return &Hub{
-		clients:    make(map[*Client]bool, 10000),
+		clients:    make(map[gocql.UUID]*Client, 10000),
 		register:   make(chan *Client, 10000),
 		unregister: make(chan *Client, 10000),
-		broadcast:  make(chan []byte, 256),
+		broadcast:  make(chan ChatMessage, 256),
 	}
 }
