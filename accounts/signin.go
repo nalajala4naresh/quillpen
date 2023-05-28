@@ -4,22 +4,17 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"github.com/quillpen/models"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
-
-
 func SignInHandler(resp http.ResponseWriter, req *http.Request) {
-    
-	var given_account models.Account
+	var given_account Account
 	defer req.Body.Close()
 	decoder := json.NewDecoder(req.Body)
 	decoder.Decode(&given_account)
-		
-	
-	account, err := getAccount(given_account.Email)
+
+	account, err := given_account.GetAccount()
 	if err == nil {
 		existing_account := account
 		// Password comparison
@@ -29,11 +24,11 @@ func SignInHandler(resp http.ResponseWriter, req *http.Request) {
 			// write Unauthorized header
 			resp.WriteHeader(http.StatusUnauthorized)
 			return
-			
+
 		} else {
 			// nullfying password
 			existing_account.Password = "Unknown"
-			data , merr := json.Marshal(existing_account)
+			data, merr := json.Marshal(existing_account)
 			if merr != nil {
 				resp.WriteHeader(http.StatusInternalServerError)
 				return
@@ -43,11 +38,8 @@ func SignInHandler(resp http.ResponseWriter, req *http.Request) {
 			resp.Write(data)
 
 		}
-		
-	} else if errors.Is(err,ACCOUNT_NOT_FOUND) {
 
+	} else if errors.Is(err, ACCOUNT_NOT_FOUND) {
 		resp.WriteHeader(http.StatusNotFound)
-		
 	}
-
 }

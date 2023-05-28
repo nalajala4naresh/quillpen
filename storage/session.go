@@ -25,6 +25,9 @@ var cassandraConfig = CassandraConfig{
 }
 
 func init() {
+	// initialize chat DB
+	initCaassandra()
+
 	var err error
 	Cassandra, err = NewCassandraStore(&cassandraConfig)
 	if err != nil {
