@@ -28,12 +28,12 @@ type Conversation struct {
 	RecipientId    gocql.UUID `json:"recipient_id" cql:"recipient_id"`
 }
 
-func (c *Conversation) ListMessages(timestamp *time.Time) ([]ChatMessage, error) {
+func (c *Conversation) ListMessages(messageId gocql.UUID) ([]ChatMessage, error) {
 	var query string
-	if timestamp == nil {
-		query = fmt.Sprintf(`SELECT *  FROM  TABLE messages WHERE conversation_id = %s LIMIT 50`, c.ConversationId)
+	if len(messageId) == 0 {
+		query = fmt.Sprintf(`SELECT *  FROM  messages WHERE conversation_id = %s LIMIT 50`, c.ConversationId)
 	} else {
-		query = fmt.Sprintf(`SELECT *  FROM  TABLE messages WHERE conversation_id = %s and time_stamp >= %s LIMIT 50`, c.ConversationId, timestamp)
+		query = fmt.Sprintf(`SELECT *  FROM  messages WHERE conversation_id = %s and message_id >= %s LIMIT 50`, c.ConversationId, messageId)
 	}
 
 	iter := storage.Cassandra.Session.Query(query).Iter()
@@ -62,11 +62,8 @@ func (s *ChatMessage) ModelType() string {
 }
 
 func (s *ChatMessage) SaveMessage() error {
-	
-
 	query := `INSERT INTO messages(conversation_id,message_id,sender_id,recipient_id,message, time_stamp) 
 	VALUES(?, ?,?,?,?,? )`
-	fmt.Sprintln(s.ConversationId, s.MessageId, s.SenderId, s.RecipientId, s.Message)
 	err := storage.Cassandra.Session.Query(query, s.ConversationId, s.MessageId, s.SenderId, s.RecipientId, s.Message, s.Timestamp).Exec()
 
 	return err
@@ -86,7 +83,7 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Extract user id from the session and register the Conn
-	id := gocql.MustRandomUUID()
+	id,_ := gocql.ParseUUID("2021cc7d-8309-4e2d-ba73-4e242ef1cefb")
 
 	client := NewClient(conn, id)
 	hub.register <- client

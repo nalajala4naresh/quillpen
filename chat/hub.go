@@ -8,6 +8,8 @@ import (
 
 	"github.com/gocql/gocql"
 	"github.com/gorilla/websocket"
+
+	"github.com/quillpen/accounts"
 )
 
 func NewClient(conn *websocket.Conn, id gocql.UUID) *Client {
@@ -83,6 +85,26 @@ func (h *Hub) run() {
 		select {
 		case client := <-h.register:
 			h.clients[client.userId] = client
+			// get user conversations list and read from last read message_id and feed it into send on each client.
+			user := accounts.User{UserId: client.userId}
+			cuser, err := user.GetUser()
+			if err != nil {
+				log.Fatalf("Unable to Get User from DB with error %s", err)
+				break
+			}
+
+			for conv_id, message_id := range cuser.Conversations {
+				conversation := Conversation{ConversationId: conv_id}
+				messages, err := conversation.ListMessages(message_id)
+				if err != nil {
+					break
+				}
+				for _, mess := range messages {
+					h.broadcast <- mess
+				}
+
+			}
+
 		case client := <-h.unregister:
 			if _, ok := h.clients[client.userId]; ok {
 				close(client.send)
