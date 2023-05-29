@@ -2,11 +2,12 @@ package chat
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
-	"github.com/gobwas/ws"
 	"github.com/gocql/gocql"
+	"github.com/gorilla/websocket"
 
 	"github.com/quillpen/storage"
 )
@@ -61,28 +62,31 @@ func (s *ChatMessage) ModelType() string {
 }
 
 func (s *ChatMessage) SaveMessage() error {
-	if len(s.ConversationId) == 0 {
-		s.ConversationId = gocql.MustRandomUUID()
-	}
-	s.MessageId = gocql.TimeUUID()
+	
 
-	query := `INSERT INTO TABLE messages(conversation_id,message_id,sender_id,recipient_id,message, time_stamp) 
+	query := `INSERT INTO messages(conversation_id,message_id,sender_id,recipient_id,message, time_stamp) 
 	VALUES(?, ?,?,?,?,? )`
+	fmt.Sprintln(s.ConversationId, s.MessageId, s.SenderId, s.RecipientId, s.Message)
 	err := storage.Cassandra.Session.Query(query, s.ConversationId, s.MessageId, s.SenderId, s.RecipientId, s.Message, s.Timestamp).Exec()
 
 	return err
 }
 
 func ChatHandler(w http.ResponseWriter, r *http.Request) {
-	conn, _, _, err := ws.UpgradeHTTP(r, w)
-	if err != nil {
-		// Unable to upgrade the request
-		w.WriteHeader(http.StatusUpgradeRequired)
-		return
-
+	upgrader := websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
 	}
+
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		w.WriteHeader(http.StatusUpgradeRequired)
+		log.Printf("Failed to upgrade connection to WebSocket: %v", err)
+		return
+	}
+
 	// Extract user id from the session and register the Conn
-	var id gocql.UUID
+	id := gocql.MustRandomUUID()
 
 	client := NewClient(conn, id)
 	hub.register <- client

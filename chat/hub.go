@@ -2,19 +2,20 @@ package chat
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
-	"net"
+	"time"
 
-	"github.com/gobwas/ws/wsutil"
 	"github.com/gocql/gocql"
+	"github.com/gorilla/websocket"
 )
 
-func NewClient(conn net.Conn, id gocql.UUID) *Client {
+func NewClient(conn *websocket.Conn, id gocql.UUID) *Client {
 	return &Client{conn: conn, send: make(chan ChatMessage), userId: id}
 }
 
 type Client struct {
-	conn   net.Conn
+	conn   *websocket.Conn
 	send   chan ChatMessage
 	userId gocql.UUID
 }
@@ -29,16 +30,21 @@ func (c *Client) read(hub *Hub) {
 
 		var mess ChatMessage
 
-		rmess, _, err := wsutil.ReadClientData(c.conn)
+		_, rawbytes, err := c.conn.ReadMessage()
 		if err != nil {
+			fmt.Printf("%s", err)
 			break
 		}
-		err = json.Unmarshal(rmess, &mess)
+
+		err = json.Unmarshal(rawbytes, &mess)
+		mess.Timestamp = time.Now()
+
 		if err != nil {
 			// Invalid chat message format
-			log.Printf("%s", err)
+			log.Printf("JSON error is %s", err)
 			break
 		}
+		fmt.Print(string(rawbytes))
 		// extract the conversation from message and write it to the cassaandra
 		hub.broadcast <- mess
 	}
@@ -54,7 +60,8 @@ func (c *Client) write(hub *Hub) {
 			log.Printf("%s", err)
 			break
 		}
-		err = wsutil.WriteServerBinary(c.conn, bmess)
+
+		err = c.conn.WriteMessage(websocket.TextMessage, bmess)
 
 		if err != nil {
 			// data loss due to channels
@@ -92,6 +99,8 @@ func (h *Hub) run() {
 			err := message.SaveMessage()
 			if err != nil {
 				// data loss so closing websocket
+				// cassandra error
+				log.Printf("%s", err)
 				close(client.send)
 				delete(h.clients, client.userId)
 
