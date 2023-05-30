@@ -2,6 +2,7 @@ package accounts
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/gocql/gocql"
 	"golang.org/x/crypto/bcrypt"
@@ -42,16 +43,13 @@ func (u *User) GetUser() (*User, error) {
 }
 
 func (u *User) CreateUser() error {
-	// create uuid
-	user_id := gocql.MustRandomUUID()
 	// insert into table
 	query := `INSERT INTO quillpen.users(email, username, user_id) VALUES(?,?,?);`
-	err := storage.Cassandra.Session.Query(query, u.Email, u.Username, user_id).Exec()
+	err := storage.Cassandra.Session.Query(query, u.Email, u.Username, u.UserId).Exec()
 	if err != nil {
 		return err
 	}
-	// set the value upon success
-	u.UserId = user_id
+
 	return nil
 }
 
@@ -122,12 +120,22 @@ func (a *Account) GetAccount() (*Account, error) {
 func (a *Account) CreateAccount() error {
 	// generate Hash of the password
 	a.Hash()
-
-	q := "INSERT INTO accounts (email, password) VALUES(?,?)"
-	err := storage.Cassandra.Session.Query(q, a.Email, a.Password).Exec()
+	user_id := gocql.MustRandomUUID()
+	// add a row to accounts table
+	q := "INSERT INTO accounts (email, password, user_id) VALUES(?,?,?);"
+	err := storage.Cassandra.Session.Query(q, a.Email, a.Password, user_id).Exec()
 	if err != nil {
 		return CAN_NOT_CREATE_ACCOUNT
 	}
+	// add a row to users table
+	user := User{Email: a.Email, Username: a.FullName, UserId: user_id}
+	err = user.CreateUser()
+	if err != nil {
+		q := "DELETE FROM accounts WHERE email = ?;"
+		derr := storage.Cassandra.Session.Query(q, a.Email).Exec()
+		return fmt.Errorf("user create error%s and delete error %s", err, derr)
+	}
+
 	return nil
 }
 

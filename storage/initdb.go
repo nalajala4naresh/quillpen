@@ -57,7 +57,8 @@ func initCaassandra() {
 
 	if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.accounts ( 
 		email text PRIMARY KEY,
-		password text 
+		password text ,
+		user_id UUID
 		
 	);`).Exec(); err != nil {
 		log.Fatalf("Failed to create accounts  table %s:", err)

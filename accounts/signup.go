@@ -3,8 +3,10 @@ package accounts
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"html/template"
 	"io/ioutil"
+	"log"
 	"net/http"
 )
 
@@ -15,9 +17,13 @@ func SignUpHandler(resp http.ResponseWriter, req *http.Request) {
 
 	defer req.Body.Close()
 	jb, _ := ioutil.ReadAll(req.Body)
+	fmt.Println(string(jb))
 	err := json.Unmarshal(jb, &new_account)
 	if err != nil {
-		panic("Unable to decode  the json")
+
+		resp.WriteHeader(http.StatusBadRequest)
+		log.Printf("Json marshalling error %s", err)
+		return
 	}
 
 	// check if account exists based on email address
