@@ -6,9 +6,20 @@ import (
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
+
+	"github.com/quillpen/sessionManager"
 )
 
 func SignInHandler(resp http.ResponseWriter, req *http.Request) {
+	session, err := sessionManager.Store.Get(req, sessionManager.SessionName)
+	if err != nil {
+		isauthenticated := session.Values[sessionManager.SessionIsAuthenticated].(bool)
+		if isauthenticated {
+			http.Redirect(resp, req, "/posts", http.StatusSeeOther)
+		}
+
+	}
+
 	var given_account Account
 	defer req.Body.Close()
 	decoder := json.NewDecoder(req.Body)
@@ -22,19 +33,27 @@ func SignInHandler(resp http.ResponseWriter, req *http.Request) {
 		password_check_err := bcrypt.CompareHashAndPassword([]byte(existing_account.Password), []byte(given_account.Password))
 		if password_check_err != nil {
 			// write Unauthorized header
+
 			resp.WriteHeader(http.StatusUnauthorized)
 			return
 
 		} else {
-			// nullfying password
+
 			existing_account.Password = "Unknown"
+			session.Values[sessionManager.SessionUserId] = existing_account.UserId.String()
+			session.Values[sessionManager.SessionIsAuthenticated] = true
+			err = session.Save(req, resp)
+			if err != nil {
+				http.Error(resp, err.Error(), http.StatusInternalServerError)
+				return
+			}
 			data, merr := json.Marshal(existing_account)
 			if merr != nil {
 				resp.WriteHeader(http.StatusInternalServerError)
 				return
 
 			}
-
+			resp.WriteHeader(http.StatusAccepted)
 			resp.Write(data)
 
 		}

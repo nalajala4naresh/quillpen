@@ -96,9 +96,9 @@ func (u *User) DeleteUser() error {
 }
 
 type Account struct {
-	Email    string `json:"email" schema:"email,required" cql:"email,required"`
-	Password string `json:"password" schema:"password,required" cql:"password,required"`
-	FullName string `json:"username" schema:"username,required" cql:"username,required"`
+	Email    string     `json:"email" schema:"email,required" cql:"email,required"`
+	Password string     `json:"password" schema:"password,required" cql:"password,required"`
+	UserId   gocql.UUID `json:"userid" cql:"user_id,required"`
 }
 
 func (a *Account) GetAccount() (*Account, error) {
@@ -109,7 +109,7 @@ func (a *Account) GetAccount() (*Account, error) {
 	iter := storage.Cassandra.Session.Query(q, a.Email).Iter()
 	var account Account
 
-	for iter.Scan(&account.Email, &account.Password, &account.FullName) {
+	for iter.Scan(&account.Email, &account.Password, &account.UserId) {
 		// Process each row of the result
 		return &account, nil
 	}
@@ -128,13 +128,16 @@ func (a *Account) CreateAccount() error {
 		return CAN_NOT_CREATE_ACCOUNT
 	}
 	// add a row to users table
-	user := User{Email: a.Email, Username: a.FullName, UserId: user_id}
+	user := User{Email: a.Email, UserId: user_id}
+
 	err = user.CreateUser()
 	if err != nil {
 		q := "DELETE FROM accounts WHERE email = ?;"
 		derr := storage.Cassandra.Session.Query(q, a.Email).Exec()
 		return fmt.Errorf("user create error%s and delete error %s", err, derr)
 	}
+
+	a.UserId = user_id
 
 	return nil
 }

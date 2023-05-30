@@ -3,21 +3,23 @@ package accounts
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
+
+	"github.com/quillpen/sessionManager"
 )
 
 var templates *template.Template
 
 func SignUpHandler(resp http.ResponseWriter, req *http.Request) {
+	session, _ := sessionManager.Store.Get(req, sessionManager.SessionName)
+
 	var new_account Account
 
 	defer req.Body.Close()
 	jb, _ := ioutil.ReadAll(req.Body)
-	fmt.Println(string(jb))
 	err := json.Unmarshal(jb, &new_account)
 	if err != nil {
 
@@ -39,12 +41,18 @@ func SignUpHandler(resp http.ResponseWriter, req *http.Request) {
 			return
 		}
 
+		session.Values[sessionManager.SessionUserId] = new_account.UserId.String()
+		session.Values[sessionManager.SessionIsAuthenticated] = true
+		err = session.Save(req, resp)
+		if err != nil {
+			http.Error(resp, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
 		// http.Redirect(resp, req, "/posts", http.StatusSeeOther)
 		// templates.ExecuteTemplate(resp, "thankyou", nil)
 
 	} else if existing_account != nil {
 		resp.WriteHeader(http.StatusConflict)
-		return
-
 	}
 }
