@@ -55,25 +55,46 @@ func (u *User) CreateUser() error {
 	return nil
 }
 
-func (u *User) AddConversation() (gocql.UUID, error) {
+func (u *User) AddConversation(messageID gocql.UUID) (*gocql.UUID, error) {
 	if len(u.UserId) == 0 {
-		return [16]byte{}, errors.New("UUID can not be empty")
+		return nil, errors.New("UUID can not be empty")
 	}
 	conv_id := gocql.MustRandomUUID()
 	query := `UPDATE quillpen.users
-	SET conversations = conversations + {?}
+	SET conversations = conversations + {?:?}
 	WHERE user_id = ?;`
-	storage.Cassandra.Session.Query(query, conv_id, u.UserId)
+	err := storage.Cassandra.Session.Query(query, conv_id, messageID, u.UserId).Exec()
+	if err != nil {
+		return nil, err
+	}
 
-	return conv_id, nil
+	return &conv_id, nil
 }
 
-func (u *User) UpdateLastRead(messageId gocql.UUID) error {
-	return nil
+func (u *User) UpdateLastRead(conversation, messageId gocql.UUID) error {
+	u.Conversations[conversation] = messageId
+	query := `UPDATE quillpen.users
+	SET conversations  = conversations + {?:?}
+	WHERE user_id = ?;`
+
+	err := storage.Cassandra.Session.Query(query, conversation, messageId, u.UserId).Exec()
+
+	return err
 }
 
 func (u *User) DeleteUser() error {
-	return nil
+	conv_delete := `DELETE FROM quillpen.messages
+	WHERE conversation_id = ? ;`
+	for conversation := range u.Conversations {
+		err := storage.Cassandra.Session.Query(conv_delete, conversation).Exec()
+		if err != nil {
+			return err
+		}
+	}
+	query := `DELETE FROM quillpen.users
+			WHERE user_id = ? ;`
+	err := storage.Cassandra.Session.Query(query, u.UserId).Exec()
+	return err
 }
 
 type Account struct {

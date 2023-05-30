@@ -9,6 +9,7 @@ import (
 	"github.com/gocql/gocql"
 	"github.com/gorilla/websocket"
 
+	"github.com/quillpen/accounts"
 	"github.com/quillpen/storage"
 )
 
@@ -83,9 +84,16 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Extract user id from the session and register the Conn
-	id,_ := gocql.ParseUUID("2021cc7d-8309-4e2d-ba73-4e242ef1cefb")
+	id, _ := gocql.ParseUUID("710cad4e-2ce3-4d81-8e06-59cf5f7d793d")
 
-	client := NewClient(conn, id)
+	user := accounts.User{UserId: id}
+	// full user details fetched from DB
+	fuser, err := user.GetUser()
+	if err != nil {
+		return
+	}
+	client := NewClient(conn, *fuser)
+
 	hub.register <- client
 
 	go client.write(hub)

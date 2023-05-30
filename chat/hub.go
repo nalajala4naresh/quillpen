@@ -12,14 +12,14 @@ import (
 	"github.com/quillpen/accounts"
 )
 
-func NewClient(conn *websocket.Conn, id gocql.UUID) *Client {
-	return &Client{conn: conn, send: make(chan ChatMessage), userId: id}
+func NewClient(conn *websocket.Conn, user accounts.User) *Client {
+	return &Client{conn: conn, send: make(chan ChatMessage), user: user}
 }
 
 type Client struct {
-	conn   *websocket.Conn
-	send   chan ChatMessage
-	userId gocql.UUID
+	conn *websocket.Conn
+	send chan ChatMessage
+	user accounts.User
 }
 
 func (c *Client) read(hub *Hub) {
@@ -84,37 +84,35 @@ func (h *Hub) run() {
 	for {
 		select {
 		case client := <-h.register:
-			h.clients[client.userId] = client
+			h.clients[client.user.UserId] = client
 			// get user conversations list and read from last read message_id and feed it into send on each client.
-			user := accounts.User{UserId: client.userId}
-			cuser, err := user.GetUser()
-			if err != nil {
-				log.Fatalf("Unable to Get User from DB with error %s", err)
-				break
-			}
 
-			for conv_id, message_id := range cuser.Conversations {
+			for conv_id, message_id := range client.user.Conversations {
 				conversation := Conversation{ConversationId: conv_id}
 				messages, err := conversation.ListMessages(message_id)
 				if err != nil {
 					break
 				}
 				for _, mess := range messages {
-					h.broadcast <- mess
+					client.send <- mess
+					client.user.UpdateLastRead(mess.ConversationId, mess.MessageId)
 				}
 
 			}
 
 		case client := <-h.unregister:
-			if _, ok := h.clients[client.userId]; ok {
+			if _, ok := h.clients[client.user.UserId]; ok {
 				close(client.send)
-				delete(h.clients, client.userId)
+				delete(h.clients, client.user.UserId)
 
 			}
 		case message := <-h.broadcast:
 			client, ok := h.clients[message.RecipientId]
 			if ok {
+
 				client.send <- message
+				client.user.UpdateLastRead(message.ConversationId, message.MessageId)
+
 			}
 
 			// write the message to database
@@ -124,7 +122,7 @@ func (h *Hub) run() {
 				// cassandra error
 				log.Printf("%s", err)
 				close(client.send)
-				delete(h.clients, client.userId)
+				delete(h.clients, client.user.UserId)
 
 			}
 
