@@ -32,7 +32,6 @@ func SignUpHandler(resp http.ResponseWriter, req *http.Request) {
 	existing_account, lerr := new_account.GetAccount()
 	if errors.Is(lerr, ACCOUNT_NOT_FOUND) {
 		// bcrypt the password
-		new_account.Hash()
 		cerr := new_account.CreateAccount()
 		if cerr != nil {
 			resp.WriteHeader(http.StatusInternalServerError)

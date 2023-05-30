@@ -3,6 +3,8 @@ package accounts
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
@@ -11,25 +13,30 @@ import (
 )
 
 func SignInHandler(resp http.ResponseWriter, req *http.Request) {
-	session, err := sessionManager.Store.Get(req, sessionManager.SessionName)
-	if err != nil {
+	session, _ := sessionManager.Store.Get(req, sessionManager.SessionName)
+	if !session.IsNew {
 		isauthenticated := session.Values[sessionManager.SessionIsAuthenticated].(bool)
 		if isauthenticated {
-			http.Redirect(resp, req, "/posts", http.StatusSeeOther)
+			http.Redirect(resp, req, "/chat", http.StatusSeeOther)
 		}
 
 	}
 
 	var given_account Account
 	defer req.Body.Close()
-	decoder := json.NewDecoder(req.Body)
-	decoder.Decode(&given_account)
+
+	jb, _ := ioutil.ReadAll(req.Body)
+
+	jerr := json.Unmarshal(jb, &given_account)
+	if jerr != nil {
+		resp.WriteHeader(http.StatusInternalServerError)
+	}
 
 	account, err := given_account.GetAccount()
 	if err == nil {
 		existing_account := account
 		// Password comparison
-
+		fmt.Println(existing_account.Password, given_account.Password)
 		password_check_err := bcrypt.CompareHashAndPassword([]byte(existing_account.Password), []byte(given_account.Password))
 		if password_check_err != nil {
 			// write Unauthorized header

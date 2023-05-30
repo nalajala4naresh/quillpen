@@ -10,6 +10,7 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/quillpen/accounts"
+	"github.com/quillpen/sessionManager"
 	"github.com/quillpen/storage"
 )
 
@@ -71,6 +72,17 @@ func (s *ChatMessage) SaveMessage() error {
 }
 
 func ChatHandler(w http.ResponseWriter, r *http.Request) {
+	var userId gocql.UUID
+
+	session, _ := sessionManager.Store.Get(r, sessionManager.SessionName)
+	if session.IsNew {
+		http.Redirect(w, r, "/signin", http.StatusSeeOther)
+	} else {
+		suserId := session.Values[sessionManager.SessionUserId].(string)
+		userId, _ = gocql.ParseUUID(suserId)
+
+	}
+
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
@@ -84,9 +96,8 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Extract user id from the session and register the Conn
-	id, _ := gocql.ParseUUID("710cad4e-2ce3-4d81-8e06-59cf5f7d793d")
 
-	user := accounts.User{UserId: id}
+	user := accounts.User{UserId: userId}
 	// full user details fetched from DB
 	fuser, err := user.GetUser()
 	if err != nil {

@@ -102,9 +102,6 @@ type Account struct {
 }
 
 func (a *Account) GetAccount() (*Account, error) {
-	// generate Hash of the password
-	a.Hash()
-
 	q := "SELECT * FROM  accounts WHERE email = ?"
 	iter := storage.Cassandra.Session.Query(q, a.Email).Iter()
 	var account Account
