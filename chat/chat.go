@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
 	"github.com/gocql/gocql"
+	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 
-	"github.com/quillpen/accounts"
 	"github.com/quillpen/sessionManager"
 	"github.com/quillpen/storage"
 )
@@ -27,23 +26,24 @@ func init() {
 type Conversation struct {
 	ConversationId gocql.UUID `json:"conversation_id" cql:"conversation_id"`
 	SenderId       gocql.UUID `json:"sender_id" cql:"sender_id"`
-	RecipientId    gocql.UUID `json:"recipient_id" cql:"recipient_id"`
+	MessageId      gocql.UUID `json:"message_id" cql:"message_id"`
+	Message        string     `json:"message" cql:"message"`
 }
 
-func (c *Conversation) ListMessages(messageId gocql.UUID) ([]ChatMessage, error) {
+func (c *Conversation) ListMessages(messageId gocql.UUID) ([]Conversation, error) {
 	var query string
 	if len(messageId) == 0 {
-		query = fmt.Sprintf(`SELECT *  FROM  messages WHERE conversation_id = %s LIMIT 50`, c.ConversationId)
+		query = fmt.Sprintf(`SELECT *  FROM  conversations WHERE conversation_id = %s LIMIT 50`, c.ConversationId)
 	} else {
-		query = fmt.Sprintf(`SELECT *  FROM  messages WHERE conversation_id = %s and message_id >= %s LIMIT 50`, c.ConversationId, messageId)
+		query = fmt.Sprintf(`SELECT *  FROM  conversations WHERE conversation_id = %s and message_id >= %s LIMIT 50`, c.ConversationId, messageId)
 	}
 
 	iter := storage.Cassandra.Session.Query(query).Iter()
 	scanner := iter.Scanner()
-	chatmessages := make([]ChatMessage, iter.NumRows())
+	chatmessages := make([]Conversation, iter.NumRows())
 	for scanner.Next() {
-		var message ChatMessage
-		err := scanner.Scan(&message.ConversationId, &message.MessageId, &message.SenderId, &message.RecipientId, &message.Message, &message.Timestamp)
+		var message Conversation
+		err := scanner.Scan(&message.ConversationId, &message.MessageId, &message.SenderId, &message.Message)
 		if err != nil {
 			return nil, err
 		}
@@ -52,23 +52,16 @@ func (c *Conversation) ListMessages(messageId gocql.UUID) ([]ChatMessage, error)
 	return chatmessages, nil
 }
 
-type ChatMessage struct {
-	Conversation
-	MessageId gocql.UUID `json:"messaage_id" cql:"message_id"`
-	Message   string     `json:"message" cql:"message"`
-	Timestamp time.Time  `json:"timestamp" cql:"time_stamp"`
-}
-
-func (s *ChatMessage) ModelType() string {
-	return "ChatMessage"
-}
-
-func (s *ChatMessage) SaveMessage() error {
-	query := `INSERT INTO messages(conversation_id,message_id,sender_id,recipient_id,message, time_stamp) 
-	VALUES(?, ?,?,?,?,? )`
-	err := storage.Cassandra.Session.Query(query, s.ConversationId, s.MessageId, s.SenderId, s.RecipientId, s.Message, s.Timestamp).Exec()
+func (s *Conversation) SaveMessage() error {
+	query := `INSERT INTO conversations(conversation_id,message_id,sender_id,message) 
+	VALUES(?, ?,?,? )`
+	err := storage.Cassandra.Session.Query(query, s.ConversationId, s.MessageId, s.SenderId, s.Message).Exec()
 
 	return err
+}
+
+func ConversationsHandler(w http.ResponseWriter, R *http.Request) {
+
 }
 
 func ChatHandler(w http.ResponseWriter, r *http.Request) {
@@ -80,6 +73,15 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		suserId := session.Values[sessionManager.SessionUserId].(string)
 		userId, _ = gocql.ParseUUID(suserId)
+
+	}
+
+	vals := mux.Vars(r)
+	conversationId := vals["id"]
+	convUuid, err := gocql.ParseUUID(conversationId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
 
 	}
 
@@ -97,16 +99,11 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Extract user id from the session and register the Conn
 
-	user := accounts.User{UserId: userId}
+	conchanel := ConversationChanel{conn: conn, userId: userId, conversationId: convUuid, send: make(chan Conversation)}
 	// full user details fetched from DB
-	fuser, err := user.GetUser()
-	if err != nil {
-		return
-	}
-	client := NewClient(conn, *fuser)
 
-	hub.register <- client
+	hub.register <- &conchanel
 
-	go client.write(hub)
-	client.read(hub)
+	go conchanel.write(hub)
+	conchanel.read(hub)
 }

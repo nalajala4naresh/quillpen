@@ -18,7 +18,7 @@ var (
 type User struct {
 	Email         string                    `json:"email" cql:"email,required"`
 	Username      string                    `json:"fullname" cql:"username,required"`
-	UserId        gocql.UUID                `json:"userhandle" cql:"user_id,required"`
+	UserId        gocql.UUID                `json:"userhandle,inline" cql:"user_id,required"`
 	Conversations map[gocql.UUID]gocql.UUID `json:"conversations" cql:"conversations"`
 }
 
@@ -27,18 +27,20 @@ func (u *User) ModelType() string {
 }
 
 func (u *User) GetUser() (*User, error) {
-	query := `SELECT * FROM  users WHERE user_id= ? ;`
+	query := `SELECT user_id, username, email FROM  users WHERE user_id= ? ;`
 	iter := storage.Cassandra.Session.Query(query, u.UserId).Iter()
 
 	var user User
-	for iter.Scanner().Next() {
+	scanner := iter.Scanner()
+	for scanner.Next() {
 
-		err := iter.Scanner().Scan(&u.UserId, &u.Username, &u.Email, &u.Conversations)
+		err := scanner.Scan(&user.UserId, &user.Username, &user.Email)
 		if err != nil {
 			return nil, err
 		}
 
 	}
+
 	return &user, nil
 }
 
@@ -98,6 +100,7 @@ func (u *User) DeleteUser() error {
 type Account struct {
 	Email    string     `json:"email" schema:"email,required" cql:"email,required"`
 	Password string     `json:"password" schema:"password,required" cql:"password,required"`
+	Username string     `json:"username" schema:"username,required" cql:"username,required"`
 	UserId   gocql.UUID `json:"userid" cql:"user_id,required"`
 }
 
@@ -106,7 +109,7 @@ func (a *Account) GetAccount() (*Account, error) {
 	iter := storage.Cassandra.Session.Query(q, a.Email).Iter()
 	var account Account
 
-	for iter.Scan(&account.Email, &account.Password, &account.UserId) {
+	for iter.Scan(&account.Email, &account.Password, &account.UserId, &account.Username) {
 		// Process each row of the result
 		return &account, nil
 	}
@@ -119,9 +122,10 @@ func (a *Account) CreateAccount() error {
 	a.Hash()
 	user_id := gocql.MustRandomUUID()
 	// add a row to accounts table
-	q := "INSERT INTO accounts (email, password, user_id) VALUES(?,?,?);"
-	err := storage.Cassandra.Session.Query(q, a.Email, a.Password, user_id).Exec()
+	q := "INSERT INTO accounts (email, password, user_id, username) VALUES(?,?,?,?);"
+	err := storage.Cassandra.Session.Query(q, a.Email, a.Password, user_id, a.Username).Exec()
 	if err != nil {
+		fmt.Printf("user create error%s", err)
 		return CAN_NOT_CREATE_ACCOUNT
 	}
 	// add a row to users table

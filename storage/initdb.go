@@ -58,21 +58,21 @@ func initCaassandra() {
 	if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.accounts ( 
 		email text PRIMARY KEY,
 		password text ,
-		user_id UUID
+		user_id UUID,
+		username text,
 		
 	);`).Exec(); err != nil {
 		log.Fatalf("Failed to create accounts  table %s:", err)
 	}
 
 	// create message table if does not exist
-	// if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.messages (
-	// 	conversation_id UUID,
-	// 	message_id UUID,
-	// 	sender_id UUID,
-	// 	recipient_id UUID,
-	// 	message text, 
-	// 	time_stamp timestamp,
-	// 	PRIMARY KEY (conversation_id, time_stamp, message_id)) WITH CLUSTERING ORDER BY (time_stamp DESC)`); err != nil {
-	// 	log.Fatalf("Failed to create messages table %s:", err)
-	// }
+	if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.conversations (
+		conversation_id UUID,
+		message_id UUID,
+		sender_id UUID,
+		message TEXT,
+		PRIMARY KEY (conversation_id, message_id)
+	  ) WITH CLUSTERING ORDER BY (message_id DESC);`).Exec(); err != nil {
+		log.Fatalf("Failed to create messages table %s:", err)
+	 }
 }

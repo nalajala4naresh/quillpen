@@ -60,7 +60,7 @@ func SignInHandler(resp http.ResponseWriter, req *http.Request) {
 				return
 
 			}
-			resp.WriteHeader(http.StatusAccepted)
+			resp.WriteHeader(http.StatusOK)
 			resp.Write(data)
 
 		}

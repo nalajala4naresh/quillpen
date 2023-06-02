@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
+	"sync"
 
 	"github.com/gocql/gocql"
 	"github.com/gorilla/websocket"
@@ -12,17 +12,18 @@ import (
 	"github.com/quillpen/accounts"
 )
 
-func NewClient(conn *websocket.Conn, user accounts.User) *Client {
-	return &Client{conn: conn, send: make(chan ChatMessage), user: user}
+func NewConversationChanel(conn *websocket.Conn, user accounts.User) *ConversationChanel {
+	return &ConversationChanel{conn: conn, send: make(chan Conversation)}
 }
 
-type Client struct {
-	conn *websocket.Conn
-	send chan ChatMessage
-	user accounts.User
+type ConversationChanel struct {
+	conn           *websocket.Conn
+	userId         gocql.UUID
+	conversationId gocql.UUID
+	send           chan Conversation
 }
 
-func (c *Client) read(hub *Hub) {
+func (c *ConversationChanel) read(hub *Hub) {
 	defer func() {
 		c.conn.Close()
 		hub.unregister <- c
@@ -30,7 +31,7 @@ func (c *Client) read(hub *Hub) {
 
 	for {
 
-		var mess ChatMessage
+		var mess Conversation
 
 		_, rawbytes, err := c.conn.ReadMessage()
 		if err != nil {
@@ -39,7 +40,6 @@ func (c *Client) read(hub *Hub) {
 		}
 
 		err = json.Unmarshal(rawbytes, &mess)
-		mess.Timestamp = time.Now()
 
 		if err != nil {
 			// Invalid chat message format
@@ -52,7 +52,7 @@ func (c *Client) read(hub *Hub) {
 	}
 }
 
-func (c *Client) write(hub *Hub) {
+func (c *ConversationChanel) write(hub *Hub) {
 	defer c.conn.Close()
 
 	for message := range c.send {
@@ -74,45 +74,49 @@ func (c *Client) write(hub *Hub) {
 }
 
 type Hub struct {
-	clients    map[gocql.UUID]*Client
-	register   chan *Client
-	unregister chan *Client
-	broadcast  chan ChatMessage
+	conversations map[gocql.UUID]map[gocql.UUID]*ConversationChanel
+	register      chan *ConversationChanel
+	unregister    chan *ConversationChanel
+	broadcast     chan Conversation
+	mu            sync.Mutex
 }
 
 func (h *Hub) run() {
 	for {
 		select {
-		case client := <-h.register:
-			h.clients[client.user.UserId] = client
-			// get user conversations list and read from last read message_id and feed it into send on each client.
+		case connectionChannel := <-h.register:
+			// add the new connection to the channel
+			h.mu.Lock()
+			participants := h.conversations[connectionChannel.conversationId]
 
-			for conv_id, message_id := range client.user.Conversations {
-				conversation := Conversation{ConversationId: conv_id}
-				messages, err := conversation.ListMessages(message_id)
-				if err != nil {
-					break
-				}
-				for _, mess := range messages {
-					client.send <- mess
-					client.user.UpdateLastRead(mess.ConversationId, mess.MessageId)
-				}
+			// add a participant
+			participants[connectionChannel.userId] = connectionChannel
 
-			}
+			h.conversations[connectionChannel.conversationId] = participants
 
-		case client := <-h.unregister:
-			if _, ok := h.clients[client.user.UserId]; ok {
-				close(client.send)
-				delete(h.clients, client.user.UserId)
+			h.mu.Unlock()
+
+		case connectionChannel := <-h.unregister:
+			h.mu.Lock()
+			participants := h.conversations[connectionChannel.conversationId]
+
+			h.conversations[connectionChannel.conversationId] = participants
+
+			h.mu.Unlock()
+			if _, ok := participants[connectionChannel.userId]; ok {
+				close(connectionChannel.send)
+				delete(h.conversations[connectionChannel.conversationId], connectionChannel.userId)
 
 			}
 		case message := <-h.broadcast:
-			client, ok := h.clients[message.RecipientId]
-			if ok {
+			conversationId := message.ConversationId
+			// take all the participants
+			participants := h.conversations[conversationId]
 
-				client.send <- message
-				client.user.UpdateLastRead(message.ConversationId, message.MessageId)
-
+			for id, conn := range participants {
+				if message.SenderId != id {
+					conn.send <- message
+				}
 			}
 
 			// write the message to database
@@ -121,8 +125,7 @@ func (h *Hub) run() {
 				// data loss so closing websocket
 				// cassandra error
 				log.Printf("%s", err)
-				close(client.send)
-				delete(h.clients, client.user.UserId)
+				delete(h.conversations, conversationId)
 
 			}
 
@@ -132,9 +135,9 @@ func (h *Hub) run() {
 
 func NewHub() *Hub {
 	return &Hub{
-		clients:    make(map[gocql.UUID]*Client, 10000),
-		register:   make(chan *Client, 10000),
-		unregister: make(chan *Client, 10000),
-		broadcast:  make(chan ChatMessage, 256),
+		conversations: make(map[gocql.UUID]map[gocql.UUID]*ConversationChanel, 10000),
+		register:      make(chan *ConversationChanel, 10000),
+		unregister:    make(chan *ConversationChanel, 10000),
+		broadcast:     make(chan Conversation, 100000),
 	}
 }
