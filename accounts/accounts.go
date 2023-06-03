@@ -83,7 +83,7 @@ func (u *User) DeleteUser() error {
 
 type Account struct {
 	Email    string     `json:"email" schema:"email,required" cql:"email,required"`
-	Password string     `json:"password" schema:"password,required" cql:"password,required"`
+	Password string     `json:"password,omitempty" schema:"password,required" cql:"password,required"`
 	Username string     `json:"username" schema:"username,required" cql:"username,required"`
 	UserId   gocql.UUID `json:"userid" cql:"user_id,required"`
 }

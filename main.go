@@ -27,14 +27,15 @@ func main() {
 	// router.Schemes("https")
 
 	router.HandleFunc("/signin", accounts.SignInHandler).Methods("POST")
-	router.HandleFunc("/accounts/{id}", accounts.ProfileHandler).Methods("GET","PATCH")
+	router.HandleFunc("/users/{id}", accounts.UserHandler).Methods("GET", "PATCH")
 	router.HandleFunc("/signup", accounts.SignUpHandler).Methods("POST")
 	router.HandleFunc("/posts", posts.ListPosts).Methods("GET")
 	router.HandleFunc("/post", posts.CreatePost).Methods("POST")
 	router.HandleFunc("/post/{postid}", posts.GetPost).Methods("GET")
 	router.HandleFunc("/", IndexHandler)
-	router.HandleFunc("/accounts", accounts.ProfileHandler)
-	router.HandleFunc("/conversations",chat.ConversationsHandler).Methods("POST")
+	router.HandleFunc("/accounts/{email}", accounts.AccountLookUpHandler).Methods("GET")
+
+	router.HandleFunc("/conversations", chat.ConversationsHandler).Methods("POST")
 	router.HandleFunc("/conversation/{id}/{userid}", chat.ChatHandler)
 	logged_handlers := handlers.LoggingHandler(os.Stdout, router)
 	contetTypeHandler := handlers.ContentTypeHandler(logged_handlers, "application/json")

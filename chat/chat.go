@@ -90,7 +90,7 @@ func (c *ConversationMessage) ListMessages(messageId *gocql.UUID) ([]Conversatio
 
 func (s *ConversationMessage) SaveMessage() error {
 	query := `INSERT INTO messages(conversation_id,message_id,sender_id,message) 
-	VALUES(?, ?,?,? )`
+	VALUES(?, ?,?,? ) USING TTL 86400;`
 	err := storage.Cassandra.Session.Query(query, s.ConversationId, s.MessageId, s.SenderId, s.Message).Exec()
 
 	return err

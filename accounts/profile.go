@@ -10,7 +10,7 @@ import (
 	_ "github.com/quillpen/sessionManager"
 )
 
-func ProfileHandler(resp http.ResponseWriter, req *http.Request) {
+func UserHandler(resp http.ResponseWriter, req *http.Request) {
 
 	// session, _ := sessionManager.Store.Get(req, sessionManager.SessionName)
 	// if session.IsNew {
