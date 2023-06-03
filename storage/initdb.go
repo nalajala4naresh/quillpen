@@ -39,19 +39,6 @@ func initCaassandra() {
 	WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1}`).Exec(); err != nil {
 		log.Fatalf("Failed to create keyspace quillpen: %s", err)
 	}
-	// create users if not exists
-
-	// user_id is still the UUID that uniquely identifies each user, serving as the primary key.
-	// username and email columns store user information, as before.
-	// conversations is  a map data type where the key represents the conversation ID and the value represents the ID of the last read message.
-	if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.users ( 
-		user_id UUID PRIMARY KEY,
-		username text,
-		email text,
-		conversations map<UUID, UUID>
-	);`).Exec(); err != nil {
-		log.Fatalf("Failed to create users  table %s:", err)
-	}
 
 	// create Accounts
 
@@ -66,7 +53,7 @@ func initCaassandra() {
 	}
 
 	// create message table if does not exist
-	if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.conversations (
+	if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.messages (
 		conversation_id UUID,
 		message_id UUID,
 		sender_id UUID,
@@ -74,5 +61,27 @@ func initCaassandra() {
 		PRIMARY KEY (conversation_id, message_id)
 	  ) WITH CLUSTERING ORDER BY (message_id DESC);`).Exec(); err != nil {
 		log.Fatalf("Failed to create messages table %s:", err)
-	 }
+	}
+	//
+
+	// create users if not exists
+
+	// user_id is still the UUID that uniquely identifies each user, serving as the primary key.
+	// username and email columns store user information, as before.
+	// conversations is  a map data type where the key represents the conversation ID and the value represents the ID of the last read message.
+	if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.users ( 
+		user_id UUID PRIMARY KEY,
+		username text,
+		email text,
+		conversations SET<UUID>
+	);`).Exec(); err != nil {
+		log.Fatalf("Failed to create users  table %s:", err)
+	}
+	if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.conversations ( 
+		conversation_id UUID PRIMARY KEY,
+		participants SET<UUID>,
+		
+	);`).Exec(); err != nil {
+		log.Fatalf("Failed to create users  table %s:", err)
+	}
 }

@@ -55,22 +55,6 @@ func (u *User) CreateUser() error {
 	return nil
 }
 
-func (u *User) AddConversation(messageID gocql.UUID) (*gocql.UUID, error) {
-	if len(u.UserId) == 0 {
-		return nil, errors.New("UUID can not be empty")
-	}
-	conv_id := gocql.MustRandomUUID()
-	query := `UPDATE quillpen.users
-	SET conversations = conversations + {?:?}
-	WHERE user_id = ?;`
-	err := storage.Cassandra.Session.Query(query, conv_id, messageID, u.UserId).Exec()
-	if err != nil {
-		return nil, err
-	}
-
-	return &conv_id, nil
-}
-
 func (u *User) UpdateLastRead(conversation, messageId gocql.UUID) error {
 	u.Conversations[conversation] = messageId
 	query := `UPDATE quillpen.users

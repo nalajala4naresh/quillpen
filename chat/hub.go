@@ -13,14 +13,14 @@ import (
 )
 
 func NewConversationChanel(conn *websocket.Conn, user accounts.User) *ConversationChanel {
-	return &ConversationChanel{conn: conn, send: make(chan Conversation)}
+	return &ConversationChanel{conn: conn, send: make(chan ConversationMessage)}
 }
 
 type ConversationChanel struct {
 	conn           *websocket.Conn
 	userId         gocql.UUID
 	conversationId gocql.UUID
-	send           chan Conversation
+	send           chan ConversationMessage
 }
 
 func (c *ConversationChanel) read(hub *Hub) {
@@ -31,7 +31,7 @@ func (c *ConversationChanel) read(hub *Hub) {
 
 	for {
 
-		var mess Conversation
+		var mess ConversationMessage
 
 		_, rawbytes, err := c.conn.ReadMessage()
 		if err != nil {
@@ -77,7 +77,7 @@ type Hub struct {
 	conversations map[gocql.UUID]map[gocql.UUID]*ConversationChanel
 	register      chan *ConversationChanel
 	unregister    chan *ConversationChanel
-	broadcast     chan Conversation
+	broadcast     chan ConversationMessage
 	mu            sync.Mutex
 }
 
@@ -90,11 +90,21 @@ func (h *Hub) run() {
 			participants := h.conversations[connectionChannel.conversationId]
 
 			// add a participant
+			if participants == nil {
+				participants = make(map[gocql.UUID]*ConversationChanel)
+
+			}
 			participants[connectionChannel.userId] = connectionChannel
 
 			h.conversations[connectionChannel.conversationId] = participants
 
 			h.mu.Unlock()
+
+			conversationMessage := ConversationMessage{ConversationId:connectionChannel.conversationId }
+			messages, _ := conversationMessage.ListMessages(nil)
+			for _, message := range messages {
+				h.broadcast <- message
+			}
 
 		case connectionChannel := <-h.unregister:
 			h.mu.Lock()
@@ -113,10 +123,10 @@ func (h *Hub) run() {
 			// take all the participants
 			participants := h.conversations[conversationId]
 
-			for id, conn := range participants {
-				if message.SenderId != id {
-					conn.send <- message
-				}
+			for _, conn := range participants {
+
+				conn.send <- message
+
 			}
 
 			// write the message to database
@@ -138,6 +148,6 @@ func NewHub() *Hub {
 		conversations: make(map[gocql.UUID]map[gocql.UUID]*ConversationChanel, 10000),
 		register:      make(chan *ConversationChanel, 10000),
 		unregister:    make(chan *ConversationChanel, 10000),
-		broadcast:     make(chan Conversation, 100000),
+		broadcast:     make(chan ConversationMessage, 100000),
 	}
 }
