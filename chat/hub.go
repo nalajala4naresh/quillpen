@@ -97,9 +97,13 @@ func (h *Hub) run() {
 			participants[connectionChannel.userId] = connectionChannel
 
 			h.conversations[connectionChannel.conversationId] = participants
-
 			h.mu.Unlock()
 
+			conversation := ConversationMessage{ConversationId: connectionChannel.conversationId } 
+            messages , _ := conversation.ListMessages(nil)
+			for _, message := range messages {
+				h.broadcast <- message
+			}
 		case connectionChannel := <-h.unregister:
 			h.mu.Lock()
 			participants := h.conversations[connectionChannel.conversationId]
