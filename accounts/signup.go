@@ -38,14 +38,18 @@ func SignUpHandler(resp http.ResponseWriter, req *http.Request) {
 			resp.Write([]byte("Please retry again Later !"))
 
 			return
-		}
+		} else {
+			session.Values[sessionManager.SessionUserId] = new_account.UserId.String()
+			session.Values[sessionManager.SessionIsAuthenticated] = true
+			err = session.Save(req, resp)
+			if err != nil {
+				http.Error(resp, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			resp.WriteHeader(http.StatusOK)
+			data, _ := json.Marshal(new_account)
+			resp.Write(data)
 
-		session.Values[sessionManager.SessionUserId] = new_account.UserId.String()
-		session.Values[sessionManager.SessionIsAuthenticated] = true
-		err = session.Save(req, resp)
-		if err != nil {
-			http.Error(resp, err.Error(), http.StatusInternalServerError)
-			return
 		}
 
 		// http.Redirect(resp, req, "/posts", http.StatusSeeOther)

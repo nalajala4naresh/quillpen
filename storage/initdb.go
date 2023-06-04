@@ -77,11 +77,23 @@ func initCaassandra() {
 	);`).Exec(); err != nil {
 		log.Fatalf("Failed to create users  table %s:", err)
 	}
+
+	// conversations
 	if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.conversations ( 
 		conversation_id UUID PRIMARY KEY,
 		participants SET<UUID>,
 		
 	);`).Exec(); err != nil {
-		log.Fatalf("Failed to create users  table %s:", err)
+		log.Fatalf("Failed to create conversations  table %s:", err)
 	}
+
+	// conversations_by_participants
+	if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.conversations_by_participants ( 
+		conversation_id UUID,
+		participants TEXT PRIMARY KEY,
+		
+	);`).Exec(); err != nil {
+		log.Fatalf("Failed to create conversations_by_participants  table %s:", err)
+	}
+
 }

@@ -112,6 +112,13 @@ func (a *Account) CreateAccount() error {
 		fmt.Printf("user create error%s", err)
 		return CAN_NOT_CREATE_ACCOUNT
 	}
+	q = "SELECT  email, user_id, username FROM accounts WHERE user_id = ?;"
+	iter := storage.Cassandra.Session.Query(q, user_id).Iter()
+
+	if !iter.Scan(&a.Email, &a.UserId, &a.Username) {
+		return fmt.Errorf("unable to read created account  ")
+
+	}
 	// add a row to users table
 	user := User{Email: a.Email, UserId: user_id}
 
@@ -121,8 +128,6 @@ func (a *Account) CreateAccount() error {
 		derr := storage.Cassandra.Session.Query(q, a.Email).Exec()
 		return fmt.Errorf("user create error%s and delete error %s", err, derr)
 	}
-
-	a.UserId = user_id
 
 	return nil
 }

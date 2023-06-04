@@ -32,26 +32,53 @@ type UserConversation struct {
 	SenderName     string     `json:"sender_name"`
 }
 
-func (c *UserConversation) SaveConversation() error {
+func (c *UserConversation) SaveConversation() (*gocql.UUID, error) {
 	// add conversation to one user
 	// Construct the CQL query dynamically with the bind variables
-	query := "INSERT INTO conversations(conversation_id,participants) VALUES (?,?)"
+	// Lookup conversation before saving it
+	query := "SELECT conversation_id FROM conversations_by_participants WHERE participants IN ? ;"
+	lookupKeys := []string{(c.SenderId.String() + ":" + c.UserId.String()), (c.UserId.String() + ":" + c.SenderId.String())}
+	boundQuery := storage.Cassandra.Session.Query(query, lookupKeys)
+	resultIter := boundQuery.Iter()
+
+	var conversation_Id gocql.UUID
+
+	if resultIter.Scan(&conversation_Id) {
+
+		return &conversation_Id, nil
+
+	}
+
+	// add a new conversation now
+	query = "INSERT INTO conversations(conversation_id,participants) VALUES (?,?)"
 
 	if err := storage.Cassandra.Session.Query(query, c.ConversationId, []gocql.UUID{c.SenderId, c.UserId}).Exec(); err != nil {
-		return err
+		return nil, err
 	}
 
-	batch := storage.Cassandra.Session.NewBatch(gocql.UnloggedBatch)
-	batch.Query(`UPDATE users SET conversations = conversations +  ? WHERE user_id = ?;`, []gocql.UUID{c.ConversationId}, c.UserId)
-	batch.Query(` UPDATE users SET conversations = conversations +  ? WHERE user_id = ?;`, []gocql.UUID{c.ConversationId}, c.SenderId)
+	// insert into conversation_by_participants
+	cbpbatch := storage.Cassandra.Session.NewBatch(gocql.LoggedBatch)
+	cbpbatch.Query("INSERT INTO conversations_by_participants(conversation_id,participants) VALUES (?,?)", c.ConversationId, lookupKeys[0])
+	cbpbatch.Query("INSERT INTO conversations_by_participants(conversation_id,participants) VALUES (?,?)", c.ConversationId, lookupKeys[1])
 
-	if err := storage.Cassandra.Session.ExecuteBatch(batch); err != nil {
+	if err := storage.Cassandra.Session.ExecuteBatch(cbpbatch); err != nil {
 
-		return err
+		return nil, err
 
 	}
 
-	return nil
+	// add the same conversationId into user profile
+	usersbatch := storage.Cassandra.Session.NewBatch(gocql.LoggedBatch)
+	usersbatch.Query(`UPDATE users SET conversations = conversations +  ? WHERE user_id = ?;`, []gocql.UUID{c.ConversationId}, c.UserId)
+	usersbatch.Query(` UPDATE users SET conversations = conversations +  ? WHERE user_id = ?;`, []gocql.UUID{c.ConversationId}, c.SenderId)
+
+	if err := storage.Cassandra.Session.ExecuteBatch(usersbatch); err != nil {
+
+		return nil, err
+
+	}
+
+	return &(c.ConversationId), nil
 }
 
 type ConversationMessage struct {
@@ -76,12 +103,12 @@ func (c *ConversationMessage) ListMessages(messageId *gocql.UUID) ([]Conversatio
 	for scanner.Next() {
 		var message ConversationMessage
 
-		err := scanner.Scan(&message.ConversationId, &message.MessageId, &message.Message,&message.SenderId)
+		err := scanner.Scan(&message.ConversationId, &message.MessageId, &message.Message, &message.SenderId)
 		if err != nil {
 			fmt.Printf("%s", err)
 			return nil, err
 		}
-		
+
 		chatmessages = append(chatmessages, message)
 	}
 
@@ -109,7 +136,7 @@ func ConversationsHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	err := conversation.SaveConversation()
+	conv_id, err := conversation.SaveConversation()
 	if err != nil {
 		log.Printf("Unable to save conversation due to error %s", err)
 
@@ -117,7 +144,22 @@ func ConversationsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 
 	}
-	w.WriteHeader(http.StatusAccepted)
+
+	newConversation := struct {
+		ConversationId gocql.UUID `json:"conversation_id"`
+	}{ConversationId: *conv_id}
+
+	bcon, err := json.Marshal(newConversation)
+	if err != nil {
+
+		log.Printf("Unable marshal saved conversation due to error %s", err)
+
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(bcon)
 
 }
 
