@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "accounts",
+    srcs = [
+        "accounts.go",
+        "lookup.go",
+        "profile.go",
+        "signin.go",
+        "signup.go",
+    ],
+    importpath = "github.com/quillpen/pkg/accounts",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/sessionManager",
+        "//pkg/storage",
+        "@com_github_gocql_gocql//:gocql",
+        "@com_github_gorilla_mux//:mux",
+        "@org_golang_x_crypto//bcrypt",
+    ],
+)

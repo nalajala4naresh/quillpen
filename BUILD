@@ -23,9 +23,9 @@ go_library(
     importpath = "github.com/quillpen",
     visibility = ["//visibility:private"],
     deps = [
-        "//accounts",
-        "//chat",
-        "//posts",
+        "//pkg/accounts",
+        "//pkg/chat",
+        "//pkg/posts",
         "@com_github_gorilla_handlers//:handlers",
         "@com_github_gorilla_mux//:mux",
         "@com_github_gorilla_sessions//:sessions",

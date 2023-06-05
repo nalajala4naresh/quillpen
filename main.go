@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/quillpen/accounts"
-	"github.com/quillpen/chat"
-	"github.com/quillpen/posts"
+	"github.com/quillpen/pkg/accounts"
+	"github.com/quillpen/pkg/chat"
+	"github.com/quillpen/pkg/posts"
 
 	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"

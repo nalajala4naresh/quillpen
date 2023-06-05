@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "posts",
+    srcs = [
+        "handlers.go",
+        "posts.go",
+    ],
+    importpath = "github.com/quillpen/pkg/posts",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/storage",
+        "@com_github_gorilla_mux//:mux",
+    ],
+)

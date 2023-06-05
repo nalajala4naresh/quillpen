@@ -13,8 +13,8 @@ http_archive(
     name = "bazel_gazelle",
     sha256 = "ecba0f04f96b4960a5b250c8e8eeec42281035970aa8852dda73098274d14a1d",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.29.0/bazel-gazelle-v0.29.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.29.0/bazel-gazelle-v0.29.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.31.0/bazel-gazelle-v0.31.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.31.0/bazel-gazelle-v0.31.0.tar.gz",
     ],
 )
 
@@ -29,7 +29,7 @@ load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
 
 go_download_sdk(
     name = "go_sdk",
-    goarch = "amd64",
+    goarch = "arm64",
     goos = "darwin",
     sdks = {
         # NOTE: In most cases the whole sdks attribute is not needed.
@@ -41,10 +41,10 @@ go_download_sdk(
         # 2. You want to avoid the dependency on the index file for the
         #    SHA-256 checksums. In this case, You can get the expected
         #    filenames and checksums from https://go.dev/dl/
-        "linux_amd64": ("go1.19.3.linux-amd64.tar.gz", "74b9640724fd4e6bb0ed2a1bc44ae813a03f1e72a4c76253e2d5c015494430ba"),
-        "darwin_amd64": ("go1.19.3.darwin-amd64.tar.gz", "7fa09a9a34cb6f794e61e9ada1d6d18796f936a2b35f22724906cad71396e590"),
+        "linux_amd64": ("go1.19.9.linux-amd64.tar.gz", "22e2fc77a8f11709a2c9ffc7d5699ba226753b2ed3e30574049c2dc28870dc7a"),
+        "darwin_arm64": ("go1.19.9.darwin-arm64.tar.gz", "f06e07f313bb914c6364b4d2cafb7d16d4782176fd34fbe0a5937d7ea40cc58b"),
     },
-    version = "1.19.3",
+    version = "1.19.9",
 )
 
 load("//:deps.bzl", "go_dependencies")
@@ -77,7 +77,7 @@ go_rules_dependencies()
 
 go_register_toolchains()
 
-gazelle_dependencies()
+gazelle_dependencies(go_sdk = "go_sdk")
 
 # rules_docker
 
