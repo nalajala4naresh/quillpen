@@ -83,7 +83,8 @@ func initCaassandra() {
 		conversation_id UUID,
 		friend_id UUID,
 		friend_name TEXT,
-		user_id UUID PRIMARY KEY
+		user_id UUID ,
+		PRIMARY KEY (user_id,conversation_id)
 		
 	);`).Exec(); err != nil {
 		log.Fatalf("Failed to create conversations  table %s:", err)

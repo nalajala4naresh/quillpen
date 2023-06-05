@@ -55,7 +55,7 @@ func ListConversationsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data, err := json.Marshal(conversations)
-
+	log.Printf("length of data is %d", len(data))
 	if err != nil {
 		log.Printf("Json Marshalling failed for conversations")
 		w.WriteHeader(http.StatusInternalServerError)

@@ -58,6 +58,7 @@ func (c *UserConversation) SaveConversation() (*gocql.UUID, error) {
 	cbpbatch.Query("INSERT INTO conversations_by_participants(conversation_id,participants) VALUES (?,?)", c.ConversationId, lookupKeys[1])
 
 	if err := storage.Cassandra.Session.ExecuteBatch(cbpbatch); err != nil {
+		fmt.Printf("insert operation in conversations_by_participants failed ")
 
 		return nil, err
 
@@ -66,11 +67,11 @@ func (c *UserConversation) SaveConversation() (*gocql.UUID, error) {
 	// add the same conversationId into conversations table
 	usersbatch := storage.Cassandra.Session.NewBatch(gocql.LoggedBatch)
 	
-	usersbatch.Query(`INSERT  INTO  conversations(conversation_id,friend_id,friend_name) VALUES(?,?,?) WHERE user_id = ?;`, c.ConversationId,c.SenderId, c.SenderName,c.UserId)
-	usersbatch.Query(` INSERT  INTO  conversations(conversation_id,friend_id,friend_name) VALUES(?,?,?) WHERE user_id = ?;`, c.ConversationId,c.UserId, c.UserName,c.SenderId)
-
+	usersbatch.Query(`INSERT  INTO  conversations(conversation_id,friend_id,friend_name,user_id) VALUES(?,?,?,?)`, c.ConversationId,c.SenderId, c.SenderName,c.UserId)
+	usersbatch.Query(` INSERT  INTO  conversations(conversation_id,friend_id,friend_name,user_id) VALUES(?,?,?,?)`, c.ConversationId,c.UserId, c.UserName,c.SenderId)
+    
 	if err := storage.Cassandra.Session.ExecuteBatch(usersbatch); err != nil {
-
+        fmt.Printf("insert operation in conversations failed ")
 		return nil, err
 
 	}
