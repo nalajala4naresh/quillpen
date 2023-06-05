@@ -24,6 +24,9 @@ func init() {
 	go hub.run()
 }
 
+
+
+
 type UserConversation struct {
 	ConversationId gocql.UUID `json:"conversation_id"`
 	SenderId       gocql.UUID `json:"sender_id"`
@@ -49,14 +52,7 @@ func (c *UserConversation) SaveConversation() (*gocql.UUID, error) {
 
 	}
 
-	// add a new conversation now
-	query = "INSERT INTO conversations(conversation_id,participants) VALUES (?,?)"
-
-	if err := storage.Cassandra.Session.Query(query, c.ConversationId, []gocql.UUID{c.SenderId, c.UserId}).Exec(); err != nil {
-		return nil, err
-	}
-
-	// insert into conversation_by_participants
+	// insert into conversation_by_participants to avoid duplicates
 	cbpbatch := storage.Cassandra.Session.NewBatch(gocql.LoggedBatch)
 	cbpbatch.Query("INSERT INTO conversations_by_participants(conversation_id,participants) VALUES (?,?)", c.ConversationId, lookupKeys[0])
 	cbpbatch.Query("INSERT INTO conversations_by_participants(conversation_id,participants) VALUES (?,?)", c.ConversationId, lookupKeys[1])
@@ -67,10 +63,11 @@ func (c *UserConversation) SaveConversation() (*gocql.UUID, error) {
 
 	}
 
-	// add the same conversationId into user profile
+	// add the same conversationId into conversations table
 	usersbatch := storage.Cassandra.Session.NewBatch(gocql.LoggedBatch)
-	usersbatch.Query(`UPDATE users SET conversations = conversations +  ? WHERE user_id = ?;`, []gocql.UUID{c.ConversationId}, c.UserId)
-	usersbatch.Query(` UPDATE users SET conversations = conversations +  ? WHERE user_id = ?;`, []gocql.UUID{c.ConversationId}, c.SenderId)
+	
+	usersbatch.Query(`INSERT  INTO  conversations(conversation_id,friend_id,friend_name) VALUES(?,?,?) WHERE user_id = ?;`, c.ConversationId,c.SenderId, c.SenderName,c.UserId)
+	usersbatch.Query(` INSERT  INTO  conversations(conversation_id,friend_id,friend_name) VALUES(?,?,?) WHERE user_id = ?;`, c.ConversationId,c.UserId, c.UserName,c.SenderId)
 
 	if err := storage.Cassandra.Session.ExecuteBatch(usersbatch); err != nil {
 
@@ -91,7 +88,7 @@ type ConversationMessage struct {
 func (c *ConversationMessage) ListMessages(messageId *gocql.UUID) ([]ConversationMessage, error) {
 	var query string
 	if messageId == nil {
-		query = fmt.Sprintf(`SELECT conversation_id,message_id,message, sender_id FROM  messages WHERE conversation_id = %s LIMIT 10`, c.ConversationId)
+		query = fmt.Sprintf(`SELECT conversation_id,message_id,message, sender_id FROM  messages WHERE conversation_id = %s LIMIT 50`, c.ConversationId)
 	} else {
 		query = fmt.Sprintf(`SELECT conversation_id,message_id,message, sender_id  FROM  messages WHERE conversation_id = %s and message_id <= %s LIMIT 50`, c.ConversationId, messageId)
 	}

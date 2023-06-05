@@ -36,6 +36,7 @@ func main() {
 	router.HandleFunc("/accounts/{email}", accounts.AccountLookUpHandler).Methods("GET")
 
 	router.HandleFunc("/conversations", chat.ConversationsHandler).Methods("POST")
+	router.HandleFunc("/conversations/{userId}",chat.ListConversationsHandler).Methods("GET")
 	router.HandleFunc("/conversation/{id}/{userid}", chat.ChatHandler)
 	logged_handlers := handlers.LoggingHandler(os.Stdout, router)
 	contetTypeHandler := handlers.ContentTypeHandler(logged_handlers, "application/json")

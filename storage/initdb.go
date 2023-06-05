@@ -80,8 +80,10 @@ func initCaassandra() {
 
 	// conversations
 	if err := s.Query(`CREATE TABLE IF NOT EXISTS quillpen.conversations ( 
-		conversation_id UUID PRIMARY KEY,
-		participants SET<UUID>,
+		conversation_id UUID,
+		friend_id UUID,
+		friend_name TEXT,
+		user_id UUID PRIMARY KEY
 		
 	);`).Exec(); err != nil {
 		log.Fatalf("Failed to create conversations  table %s:", err)
