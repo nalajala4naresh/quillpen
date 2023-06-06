@@ -6,13 +6,7 @@ import (
 	"net/http"
 )
 
-var templates *template.Template
 
-func init() {
-
-	templates = template.Must(template.ParseFiles("templates/editor.html", "templates/index.html"))
-
-}
 
 func EditorSpace(resp http.ResponseWriter, req *http.Request) {
 

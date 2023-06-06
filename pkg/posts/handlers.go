@@ -2,7 +2,6 @@ package posts
 
 import (
 	"encoding/json"
-	"html/template"
 	"io/ioutil"
 	"net/http"
 	"time"
@@ -10,11 +9,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-var templates *template.Template
 
-func init() {
-	templates = template.Must(template.ParseFiles("templates/posts.html"))
-}
 
 func CreatePost(resp http.ResponseWriter, req *http.Request) {
 	var post Post

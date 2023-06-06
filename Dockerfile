@@ -1,23 +1,27 @@
-FROM golang:1.17 as DEPS
+# Stage 1: Build the Go application
+FROM golang:1.19-alpine as builder
 
-ENV APP_USER app
+WORKDIR /app
 
-ENV STAGE "local"
-ENV DOCDB_USER "myUserAdmin"
-ENV DOCDB_PASS "abc123"
-ENV DOCDB_ENDPOINT "172.18.0.3"
-ENV DOCDB_DB "quillpen"
-ENV DOCDB_ACCOUNTS "accounts"
-ENV APP_HOME /go/src/quillpen
+# Copy the Go module files
+COPY go.mod go.sum ./
 
-
-WORKDIR $APP_HOME
-COPY go.mod .
-COPY go.sum .
-
-
+# Download the Go module dependencies
 RUN go mod download
 
+# Copy the application source code
 COPY . .
-RUN go build
-ENTRYPOINT ["./quillpen"]
+
+# Build the Go application with CGO disabled and as a statically-linked executable
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o quillpen
+
+# Stage 2: Create the minimal runtime image
+FROM scratch
+
+WORKDIR /app
+
+# Copy the executable from the builder stage
+COPY --from=builder /app/quillpen /app/quillpen
+
+# Set the command to run the application
+CMD ["/app/quillpen"]

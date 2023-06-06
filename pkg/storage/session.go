@@ -18,7 +18,7 @@ type CassandraConfig struct {
 }
 
 var cassandraConfig = CassandraConfig{
-	host:       getEnv("CASSANDRA_HOST", "localhost"),
+	host:       getEnv("CASSANDRA_HOST", "cassandra.default"),
 	port:       getEnv("CASSANDRA_PORT", "9042"),
 	keyspace:   getEnv("CASSANDRA_KEYSPACE", "quillpen"),
 	conistency: getEnv("CASSANDRA_CONSISTANCY", "LOCAL_QUORUM"),
