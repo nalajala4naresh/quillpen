@@ -25,7 +25,7 @@ func main() {
 	router.HandleFunc("/posts", posts.ListPosts).Methods("GET")
 	router.HandleFunc("/post", posts.CreatePost).Methods("POST")
 	router.HandleFunc("/post/{postid}", posts.GetPost).Methods("GET")
-	router.HandleFunc("/", IndexHandler).Methods("GET")
+	router.HandleFunc("/health", IndexHandler).Methods("GET")
 	router.HandleFunc("/accounts/{email}", accounts.AccountLookUpHandler).Methods("GET")
 
 	router.HandleFunc("/conversations", chat.ConversationsHandler).Methods("POST")
