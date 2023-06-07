@@ -19,6 +19,10 @@ func main() {
 
 	// router.Schemes("https")
 
+	serverAddr := ":443"
+	certFile := "certificate.pem" // Path to your TLS certificate file
+	keyFile := "private_key.pem"
+
 	router.HandleFunc("/signin", accounts.SignInHandler).Methods("POST")
 	router.HandleFunc("/users/{id}", accounts.UserHandler).Methods("GET", "PATCH")
 	router.HandleFunc("/signup", accounts.SignUpHandler).Methods("POST")
@@ -34,7 +38,7 @@ func main() {
 	logged_handlers := handlers.LoggingHandler(os.Stdout, router)
 	contetTypeHandler := handlers.ContentTypeHandler(logged_handlers, "application/json")
 	compressedHandlers := handlers.CompressHandler(contetTypeHandler)
-	http.ListenAndServe(":80", compressedHandlers)
+	http.ListenAndServeTLS(serverAddr, certFile, keyFile, compressedHandlers)
 }
 
 func IndexHandler(resp http.ResponseWriter, req *http.Request) {
