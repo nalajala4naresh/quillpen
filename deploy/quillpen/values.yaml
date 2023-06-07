@@ -38,7 +38,8 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
-  type: LoadBalancer
+  type: ClusterIP
+  port: 80
 
 pod:
   livenessProbe:
@@ -46,21 +47,27 @@ pod:
   readinessProbe:
     port: 80
 
+# install aws-load-balancer-controller 1.5.3 
 ingress:
-  enabled: false
-  className: ""
-  annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
+  enabled: true
+  className: alb
+  annotations:
+     alb.ingress.kubernetes.io/scheme: internet-facing
+     alb.ingress.kubernetes.io/target-type: ip
+     alb.ingress.kubernetes.io/subnets: subnet-612d843d, subnet-b167c9d6
+     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:783686645338:certificate/72e931ca-2367-4a14-bc87-45007f0ddca4
   hosts:
-    - host: chart-example.local
+    - host: akashavaani.com
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
+
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
   #      - chart-example.local
+
 
 resources: {}
   # We usually recommend not to specify default resources and to leave this as a conscious
