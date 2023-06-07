@@ -2,17 +2,19 @@ apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "quillpen.fullname" . }}
-  labels:
-    service.beta.kubernetes.io/aws-load-balancer-type: "alb"
-    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:us-east-1:783686645338:certificate/3003c275-73ce-429b-9f0c-0bb021e95d8c"
+
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-scheme : "internet-facing"
+    service.beta.kubernetes.io/aws-load-balancer-name: "quillchat"
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:us-east-1:783686645338:certificate/72e931ca-2367-4a14-bc87-45007f0ddca4"
+    service.beta.kubernetes.io/aws-load-balancer-attributes: load_balancing.cross_zone.enabled=true
    
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - port: 
-        targetPort: 80
-        port: 443
-        protocol: TCP
-        name: https
+    - targetPort: 80
+      port: 443
+      protocol: TCP
+        
   selector:
     {{- include "quillpen.selectorLabels" . | nindent 4 }}

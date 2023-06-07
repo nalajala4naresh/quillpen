@@ -22,6 +22,7 @@ WORKDIR /app
 
 # Copy the executable from the builder stage
 COPY --from=builder /app/quillpen /app/quillpen
+COPY ./sf-class2-root.crt .
 
 # Set the command to run the application
 CMD ["/app/quillpen"]

@@ -15,28 +15,29 @@ type CassandraConfig struct {
 	port       string
 	keyspace   string
 	conistency string
+	tls        *tls.Config
 }
 
 var cassandraConfig = CassandraConfig{
-	host:       getEnv("CASSANDRA_HOST", "cassandra.default"),
-	port:       getEnv("CASSANDRA_PORT", "9042"),
+	host:       getEnv("CASSANDRA_HOST", "cassandra.us-east-1.amazonaws.com"),
+	port:       getEnv("CASSANDRA_PORT", "9142"),
 	keyspace:   getEnv("CASSANDRA_KEYSPACE", "quillpen"),
 	conistency: getEnv("CASSANDRA_CONSISTANCY", "LOCAL_QUORUM"),
 }
 
 func init() {
 	// initialize chat DB
-	initCaassandra()
 
 	var err error
 	Cassandra, err = NewCassandraStore(&cassandraConfig)
 	if err != nil {
 		panic(err.Error())
 	}
+	initCaassandra()
 }
 
 const (
-	caFilePath     = "rds-combined-ca-bundle.pem"
+	caFilePath     = "sf-class2-root.crt"
 	connectTimeout = 5
 	queryTimeout   = 30
 )

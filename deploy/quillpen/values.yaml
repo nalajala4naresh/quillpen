@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: registry.digitalocean.com/quillpen/quillpen
+  repository: 783686645338.dkr.ecr.us-east-1.amazonaws.com/quillpen
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v6"
+  tag: "v4"
 
 imagePullSecrets:
    - name: "quillpen"
@@ -39,7 +39,12 @@ securityContext: {}
 
 service:
   type: LoadBalancer
-  port: 443
+
+pod:
+  livenessProbe:
+    port: 80
+  readinessProbe:
+    port: 80
 
 ingress:
   enabled: false
