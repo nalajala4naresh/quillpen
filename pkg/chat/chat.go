@@ -53,7 +53,7 @@ func (c *UserConversation) SaveConversation() (*gocql.UUID, error) {
 	}
 
 	// insert into conversation_by_participants to avoid duplicates
-	cbpbatch := storage.Cassandra.Session.NewBatch(gocql.LoggedBatch)
+	cbpbatch := storage.Cassandra.Session.NewBatch(gocql.UnloggedBatch)
 	cbpbatch.Query("INSERT INTO conversations_by_participants(conversation_id,participants) VALUES (?,?)", c.ConversationId, lookupKeys[0])
 	cbpbatch.Query("INSERT INTO conversations_by_participants(conversation_id,participants) VALUES (?,?)", c.ConversationId, lookupKeys[1])
 
@@ -65,7 +65,7 @@ func (c *UserConversation) SaveConversation() (*gocql.UUID, error) {
 	}
 
 	// add the same conversationId into conversations table
-	usersbatch := storage.Cassandra.Session.NewBatch(gocql.LoggedBatch)
+	usersbatch := storage.Cassandra.Session.NewBatch(gocql.UnloggedBatch)
 	
 	usersbatch.Query(`INSERT  INTO  conversations(conversation_id,friend_id,friend_name,user_id) VALUES(?,?,?,?)`, c.ConversationId,c.SenderId, c.SenderName,c.UserId)
 	usersbatch.Query(` INSERT  INTO  conversations(conversation_id,friend_id,friend_name,user_id) VALUES(?,?,?,?)`, c.ConversationId,c.UserId, c.UserName,c.SenderId)
