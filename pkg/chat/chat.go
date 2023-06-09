@@ -95,7 +95,7 @@ func (c *ConversationMessage) ListMessages(messageId *gocql.UUID) ([]Conversatio
 	iter := storage.Cassandra.Session.Query(query).Iter()
 	defer iter.Close()
 	scanner := iter.Scanner()
-	chatmessages := make([]ConversationMessage, iter.NumRows())
+	var chatmessages []ConversationMessage
 	for scanner.Next() {
 		var message ConversationMessage
 
@@ -108,13 +108,20 @@ func (c *ConversationMessage) ListMessages(messageId *gocql.UUID) ([]Conversatio
 		chatmessages = append(chatmessages, message)
 	}
 
+	if len(chatmessages) > 1 {
+		for i, j := 0, len(chatmessages)-1; i < j; i, j = i+1, j-1 {
+			chatmessages[i], chatmessages[j] = chatmessages[j], chatmessages[i]
+		}
+
+	}
+
 	return chatmessages, nil
 }
 
 func (s *ConversationMessage) SaveMessage() error {
 	query := `INSERT INTO messages(conversation_id,message_id,sender_id,message,message_time) 
 	VALUES(?, ?,?,?,? );`
-	err := storage.Cassandra.Session.Query(query, s.ConversationId, s.MessageId, s.SenderId, s.Message,time.Now()).Exec()
+	err := storage.Cassandra.Session.Query(query, s.ConversationId, s.MessageId, s.SenderId, s.Message, time.Now()).Exec()
 	if err != nil {
 		log.Printf("Unable to save  message due to error %s", err)
 	}
