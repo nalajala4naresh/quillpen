@@ -3,7 +3,6 @@ package accounts
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 
@@ -36,7 +35,6 @@ func SignInHandler(resp http.ResponseWriter, req *http.Request) {
 	if err == nil {
 		existing_account := account
 		// Password comparison
-		fmt.Println(existing_account.Password, given_account.Password)
 		password_check_err := bcrypt.CompareHashAndPassword([]byte(existing_account.Password), []byte(given_account.Password))
 		if password_check_err != nil {
 			// write Unauthorized header

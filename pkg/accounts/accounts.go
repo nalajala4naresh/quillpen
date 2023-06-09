@@ -120,7 +120,7 @@ func (a *Account) CreateAccount() error {
 
 	}
 	// add a row to users table
-	user := User{Email: a.Email, UserId: user_id}
+	user := User{Email: a.Email, UserId: user_id,Username: a.Username}
 
 	err = user.CreateUser()
 	if err != nil {

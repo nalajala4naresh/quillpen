@@ -30,8 +30,9 @@ func initCaassandra() {
 		message_id UUID,
 		sender_id UUID,
 		message TEXT,
-		PRIMARY KEY (conversation_id, message_id)
-	  ) WITH CLUSTERING ORDER BY (message_id DESC);`).Exec(); err != nil {
+		message_time TIMESTAMP,
+		PRIMARY KEY (conversation_id,message_time,message_id)
+	  ) WITH CLUSTERING ORDER BY (message_time DESC);`).Exec(); err != nil {
 		log.Fatalf("Failed to create messages table %s:", err)
 	}
 	//

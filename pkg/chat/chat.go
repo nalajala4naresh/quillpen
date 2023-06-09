@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gocql/gocql"
 	"github.com/gorilla/mux"
@@ -86,9 +87,9 @@ type ConversationMessage struct {
 func (c *ConversationMessage) ListMessages(messageId *gocql.UUID) ([]ConversationMessage, error) {
 	var query string
 	if messageId == nil {
-		query = fmt.Sprintf(`SELECT conversation_id,message_id,message, sender_id FROM  messages WHERE conversation_id = %s LIMIT 50`, c.ConversationId)
+		query = fmt.Sprintf(`SELECT conversation_id,message_id,message, sender_id FROM  messages WHERE conversation_id = %s ORDER BY message_time DESC LIMIT 50`, c.ConversationId)
 	} else {
-		query = fmt.Sprintf(`SELECT conversation_id,message_id,message, sender_id  FROM  messages WHERE conversation_id = %s and message_id <= %s LIMIT 50`, c.ConversationId, messageId)
+		query = fmt.Sprintf(`SELECT conversation_id,message_id,message, sender_id  FROM  messages WHERE conversation_id = %s and message_id <= %s ORDER BY message_time DESC LIMIT 50`, c.ConversationId, messageId)
 	}
 
 	iter := storage.Cassandra.Session.Query(query).Iter()
@@ -111,9 +112,9 @@ func (c *ConversationMessage) ListMessages(messageId *gocql.UUID) ([]Conversatio
 }
 
 func (s *ConversationMessage) SaveMessage() error {
-	query := `INSERT INTO messages(conversation_id,message_id,sender_id,message) 
-	VALUES(?, ?,?,? );`
-	err := storage.Cassandra.Session.Query(query, s.ConversationId, s.MessageId, s.SenderId, s.Message).Exec()
+	query := `INSERT INTO messages(conversation_id,message_id,sender_id,message,message_time) 
+	VALUES(?, ?,?,?,? );`
+	err := storage.Cassandra.Session.Query(query, s.ConversationId, s.MessageId, s.SenderId, s.Message,time.Now()).Exec()
 	if err != nil {
 		log.Printf("Unable to save  message due to error %s", err)
 	}
@@ -170,7 +171,6 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	// 	userId, _ = gocql.ParseUUID(suserId)
 
 	// }
-	print("called chat handler")
 
 	vals := mux.Vars(r)
 	conversationId, err := gocql.ParseUUID(vals["id"])

@@ -102,7 +102,7 @@ func (h *Hub) run() {
 			conversation := ConversationMessage{ConversationId: connectionChannel.conversationId } 
             messages , _ := conversation.ListMessages(nil)
 			for _, message := range messages {
-				h.broadcast <- message
+				connectionChannel.send <- message
 			}
 		case connectionChannel := <-h.unregister:
 			h.mu.Lock()
@@ -126,8 +126,6 @@ func (h *Hub) run() {
 				conn.send <- message
 
 			}
-
-			fmt.Printf("%s, %s, %s,%s",message.ConversationId, message.MessageId, message.SenderId, message.Message)
 
 			// write the message to database
 			err := message.SaveMessage()
