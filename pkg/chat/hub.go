@@ -120,12 +120,14 @@ func (h *Hub) run() {
 			conversationId := message.ConversationId
 			// take all the participants
 			participants := h.conversations[conversationId]
-
+            
 			for _, conn := range participants {
 
 				conn.send <- message
 
 			}
+
+			fmt.Printf("%s, %s, %s,%s",message.ConversationId, message.MessageId, message.SenderId, message.Message)
 
 			// write the message to database
 			err := message.SaveMessage()

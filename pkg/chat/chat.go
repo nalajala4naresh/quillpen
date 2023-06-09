@@ -24,9 +24,6 @@ func init() {
 	go hub.run()
 }
 
-
-
-
 type UserConversation struct {
 	ConversationId gocql.UUID `json:"conversation_id"`
 	SenderId       gocql.UUID `json:"sender_id"`
@@ -66,12 +63,12 @@ func (c *UserConversation) SaveConversation() (*gocql.UUID, error) {
 
 	// add the same conversationId into conversations table
 	usersbatch := storage.Cassandra.Session.NewBatch(gocql.UnloggedBatch)
-	
-	usersbatch.Query(`INSERT  INTO  conversations(conversation_id,friend_id,friend_name,user_id) VALUES(?,?,?,?)`, c.ConversationId,c.SenderId, c.SenderName,c.UserId)
-	usersbatch.Query(` INSERT  INTO  conversations(conversation_id,friend_id,friend_name,user_id) VALUES(?,?,?,?)`, c.ConversationId,c.UserId, c.UserName,c.SenderId)
-    
+
+	usersbatch.Query(`INSERT  INTO  conversations(conversation_id,friend_id,friend_name,user_id) VALUES(?,?,?,?)`, c.ConversationId, c.SenderId, c.SenderName, c.UserId)
+	usersbatch.Query(` INSERT  INTO  conversations(conversation_id,friend_id,friend_name,user_id) VALUES(?,?,?,?)`, c.ConversationId, c.UserId, c.UserName, c.SenderId)
+
 	if err := storage.Cassandra.Session.ExecuteBatch(usersbatch); err != nil {
-        fmt.Printf("insert operation in conversations failed ")
+		fmt.Printf("insert operation in conversations failed ")
 		return nil, err
 
 	}
@@ -115,9 +112,11 @@ func (c *ConversationMessage) ListMessages(messageId *gocql.UUID) ([]Conversatio
 
 func (s *ConversationMessage) SaveMessage() error {
 	query := `INSERT INTO messages(conversation_id,message_id,sender_id,message) 
-	VALUES(?, ?,?,? ) USING TTL 86400;`
+	VALUES(?, ?,?,? );`
 	err := storage.Cassandra.Session.Query(query, s.ConversationId, s.MessageId, s.SenderId, s.Message).Exec()
-
+	if err != nil {
+		log.Printf("Unable to save  message due to error %s", err)
+	}
 	return err
 }
 
@@ -171,6 +170,7 @@ func ChatHandler(w http.ResponseWriter, r *http.Request) {
 	// 	userId, _ = gocql.ParseUUID(suserId)
 
 	// }
+	print("called chat handler")
 
 	vals := mux.Vars(r)
 	conversationId, err := gocql.ParseUUID(vals["id"])

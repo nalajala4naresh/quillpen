@@ -17,8 +17,7 @@ import (
 func main() {
 	router := mux.NewRouter()
 
-	// router.Schemes("https")
-
+    
 	serverAddr := ":443"
 	certFile := "certificate.pem" // Path to your TLS certificate file
 	keyFile := "private_key.pem"

@@ -2,7 +2,7 @@ package editor
 
 import (
 	"github.com/gorilla/csrf"
-	"html/template"
+	
 	"net/http"
 )
 
