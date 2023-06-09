@@ -1,4 +1,4 @@
-package main
+package tls
 
 import (
 	"crypto/rand"
@@ -24,7 +24,7 @@ func main() {
 	// Create a self-signed certificate template
 	template := x509.Certificate{
 		SerialNumber:          big.NewInt(1),
-		Subject:               pkix.Name{CommonName: "quillpen.co"},
+		Subject:               pkix.Name{CommonName: "akashavaani.com"},
 		NotBefore:             time.Now(),
 		NotAfter:              time.Now().AddDate(1, 0, 0), // Valid for 1 year
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
