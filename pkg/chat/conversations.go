@@ -37,6 +37,7 @@ func ListConversations(userId gocql.UUID) ([]Conversation, error) {
 
 }
 
+// chat page List all the conversations a user has
 func ListConversationsHandler(w http.ResponseWriter, r *http.Request) {
 
 	vals := mux.Vars(r)
@@ -63,5 +64,40 @@ func ListConversationsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	w.Write(data)
+
+}
+
+// Delete a conversation in the above list from user
+
+func DeleteConversation(userId, convId gocql.UUID) error {
+
+	// Delete conversation
+	query := storage.Cassandra.Session.Query("DELETE FROM conversations WHERE user_id = ? AND conversation_id = ?", userId, convId)
+	return query.Exec()
+
+}
+func DeleteConversationHandler(w http.ResponseWriter, r *http.Request) {
+
+	vals := mux.Vars(r)
+	userId := vals["userId"]
+	convId := vals["conversationId"]
+	uId, err := gocql.ParseUUID(userId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	cId, err := gocql.ParseUUID(convId)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	err = DeleteConversation(uId, cId)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+
+	}
+
+	w.WriteHeader(http.StatusOK)
 
 }

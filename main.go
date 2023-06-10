@@ -17,7 +17,6 @@ import (
 func main() {
 	router := mux.NewRouter()
 
-    
 	serverAddr := ":443"
 	certFile := "certificate.pem" // Path to your TLS certificate file
 	keyFile := "private_key.pem"
@@ -32,6 +31,7 @@ func main() {
 	router.HandleFunc("/accounts/{email}", accounts.AccountLookUpHandler).Methods("GET")
 
 	router.HandleFunc("/conversations", chat.ConversationsHandler).Methods("POST")
+	router.HandleFunc("/conversations/{conversationId}/{userId}", chat.DeleteConversationHandler).Methods("DELETE")
 	router.HandleFunc("/conversations/{userId}", chat.ListConversationsHandler).Methods("GET")
 	router.HandleFunc("/conversation/{id}/{userid}", chat.ChatHandler)
 	logged_handlers := handlers.LoggingHandler(os.Stdout, router)
