@@ -86,6 +86,7 @@ type Account struct {
 	Password string     `json:"password,omitempty" schema:"password,required" cql:"password,required"`
 	Username string     `json:"username" schema:"username,required" cql:"username,required"`
 	UserId   gocql.UUID `json:"userid" cql:"user_id,required"`
+	PublicKey string     `json:"publickey" cql:"public_key,required"` 
 }
 
 func (a *Account) GetAccount() (*Account, error) {
@@ -106,8 +107,8 @@ func (a *Account) CreateAccount() error {
 	a.Hash()
 	user_id := gocql.MustRandomUUID()
 	// add a row to accounts table
-	q := "INSERT INTO accounts (email, password, user_id, username) VALUES(?,?,?,?);"
-	err := storage.Cassandra.Session.Query(q, a.Email, a.Password, user_id, a.Username).Exec()
+	q := "INSERT INTO accounts (email, password, user_id, username,publickey) VALUES(?,?,?,?,?);"
+	err := storage.Cassandra.Session.Query(q, a.Email, a.Password, user_id, a.Username,a.PublicKey).Exec()
 	if err != nil {
 		fmt.Printf("user create error%s", err)
 		return CAN_NOT_CREATE_ACCOUNT

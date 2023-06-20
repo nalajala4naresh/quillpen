@@ -14,18 +14,19 @@ type Conversation struct {
 	FriendId       gocql.UUID `json:"friend_id"`
 	FriendName     string     `json:"friend_name"`
 	ConversationId gocql.UUID `json:"conversation_id"`
+	FriendPublicKey      string     `json:"friend_publickey"`
 }
 
 func ListConversations(userId gocql.UUID) ([]Conversation, error) {
 
-	query := "SELECT conversation_id,friend_id,friend_name FROM  conversations WHERE user_id = ? ;"
+	query := "SELECT conversation_id,friend_id,friend_name,friend_publickey FROM  conversations WHERE user_id = ? ;"
 	iter := storage.Cassandra.Session.Query(query, userId).Iter()
 	scanner := iter.Scanner()
 	var results []Conversation
 	for scanner.Next() {
 
 		var conversation Conversation
-		err := scanner.Scan(&conversation.ConversationId, &conversation.FriendId, &conversation.FriendName)
+		err := scanner.Scan(&conversation.ConversationId, &conversation.FriendId, &conversation.FriendName,&conversation.FriendPublicKey)
 		if err != nil {
 			return nil, err
 		}
@@ -69,7 +70,7 @@ func ListConversationsHandler(w http.ResponseWriter, r *http.Request) {
 
 // Delete a conversation in the above list from user
 
-func DeleteConversation( convId gocql.UUID) error {
+func DeleteConversation(convId gocql.UUID) error {
 
 	// Delete conversation
 	query := storage.Cassandra.Session.Query("DELETE FROM messages WHERE  conversation_id = ?", convId)

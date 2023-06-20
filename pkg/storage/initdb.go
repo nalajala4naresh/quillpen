@@ -19,6 +19,7 @@ func initCaassandra() {
 		password text ,
 		user_id UUID,
 		username text,
+		publickey text,
 		
 	);`).Exec(); err != nil {
 		log.Fatalf("Failed to create accounts  table %s:", err)
@@ -57,6 +58,7 @@ func initCaassandra() {
 		friend_id UUID,
 		friend_name TEXT,
 		user_id UUID ,
+		friend_publickey TEXT,
 		PRIMARY KEY (user_id,conversation_id)
 		
 	);`).Exec(); err != nil {

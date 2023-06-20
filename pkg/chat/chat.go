@@ -31,9 +31,11 @@ type UserConversation struct {
 	UserId         gocql.UUID `json:"user_id"`
 	UserName       string     `json:"user_name"`
 	SenderName     string     `json:"sender_name"`
+	UserKey  string `json:"user_key"`
+	SenderKey string `json:"sender_key"`
 }
 
-func (c *UserConversation) SaveConversation() (*gocql.UUID, error) {
+func (c *UserConversation) CreateConversation() (*gocql.UUID, error) {
 	// add conversation to one user
 	// Construct the CQL query dynamically with the bind variables
 	// Lookup conversation before saving it
@@ -65,8 +67,8 @@ func (c *UserConversation) SaveConversation() (*gocql.UUID, error) {
 	// add the same conversationId into conversations table
 	usersbatch := storage.Cassandra.Session.NewBatch(gocql.UnloggedBatch)
 
-	usersbatch.Query(`INSERT  INTO  conversations(conversation_id,friend_id,friend_name,user_id) VALUES(?,?,?,?)`, c.ConversationId, c.SenderId, c.SenderName, c.UserId)
-	usersbatch.Query(` INSERT  INTO  conversations(conversation_id,friend_id,friend_name,user_id) VALUES(?,?,?,?)`, c.ConversationId, c.UserId, c.UserName, c.SenderId)
+	usersbatch.Query(`INSERT  INTO  conversations(conversation_id,friend_id,friend_name,user_id,friend_publickey) VALUES(?,?,?,?,?)`, c.ConversationId, c.SenderId, c.SenderName, c.UserId,c.SenderKey)
+	usersbatch.Query(` INSERT  INTO  conversations(conversation_id,friend_id,friend_name,user_id,friend_publickey) VALUES(?,?,?,?,?)`, c.ConversationId, c.UserId, c.UserName, c.SenderId,c.UserKey)
 
 	if err := storage.Cassandra.Session.ExecuteBatch(usersbatch); err != nil {
 		fmt.Printf("insert operation in conversations failed ")
@@ -141,7 +143,7 @@ func ConversationsHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusInternalServerError)
 	}
 
-	conv_id, err := conversation.SaveConversation()
+	conv_id, err := conversation.CreateConversation()
 	if err != nil {
 		log.Printf("Unable to save conversation due to error %s", err)
 
