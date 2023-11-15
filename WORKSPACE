@@ -2,24 +2,24 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "6b65cb7917b4d1709f9410ffe00ecf3e160edf674b78c54a894471320862184f",
+    sha256 = "91585017debb61982f7054c9688857a2ad1fd823fc3f9cb05048b0025c47d023",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.39.0/rules_go-v0.39.0.zip",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.39.0/rules_go-v0.39.0.zip",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.42.0/rules_go-v0.42.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.42.0/rules_go-v0.42.0.zip",
     ],
 )
 
 http_archive(
     name = "bazel_gazelle",
-    sha256 = "ecba0f04f96b4960a5b250c8e8eeec42281035970aa8852dda73098274d14a1d",
+    sha256 = "b7387f72efb59f876e4daae42f1d3912d0d45563eac7cb23d1de0b094ab588cf",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.31.0/bazel-gazelle-v0.31.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.31.0/bazel-gazelle-v0.31.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.34.0/bazel-gazelle-v0.34.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.34.0/bazel-gazelle-v0.34.0.tar.gz",
     ],
 )
 
 load("@io_bazel_rules_go//go:deps.bzl", "go_download_sdk", "go_register_toolchains", "go_rules_dependencies")
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
+load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 ############################################################
 # Define your own dependencies here using go_repository.
@@ -41,34 +41,14 @@ go_download_sdk(
         # 2. You want to avoid the dependency on the index file for the
         #    SHA-256 checksums. In this case, You can get the expected
         #    filenames and checksums from https://go.dev/dl/
-        "linux_amd64": ("go1.19.9.linux-amd64.tar.gz", "22e2fc77a8f11709a2c9ffc7d5699ba226753b2ed3e30574049c2dc28870dc7a"),
-        "darwin_arm64": ("go1.19.9.darwin-arm64.tar.gz", "f06e07f313bb914c6364b4d2cafb7d16d4782176fd34fbe0a5937d7ea40cc58b"),
+        "linux_amd64": ("go1.21.4.linux-amd64.tar.gz", "73cac0215254d0c7d1241fa40837851f3b9a8a742d0b54714cbdfb3feaf8f0af"),
+        "darwin_arm64": ("go1.21.4.darwin-arm64.tar.gz", "8b7caf2ac60bdff457dba7d4ff2a01def889592b834453431ae3caecf884f6a5"),
+        "linux_arm64" : ("go1.21.4.linux-arm64.tar.gz","ce1983a7289856c3a918e1fd26d41e072cc39f928adfb11ba1896440849b95da"),
     },
-    version = "1.19.9",
+    version = "1.21.4",
 )
 
 load("//:deps.bzl", "go_dependencies")
-
-go_repository(
-    name = "com_github_gobwas_httphead",
-    importpath = "github.com/gobwas/httphead",
-    sum = "h1:exrUm0f4YX0L7EBwZHuCF4GDp8aJfVeBrlLQrs6NqWU=",
-    version = "v0.1.0",
-)
-
-go_repository(
-    name = "com_github_gobwas_pool",
-    importpath = "github.com/gobwas/pool",
-    sum = "h1:xfeeEhW7pwmX8nuLVlqbzVc7udMDrwetjEv+TZIz1og=",
-    version = "v0.2.1",
-)
-
-go_repository(
-    name = "com_github_gobwas_ws",
-    importpath = "github.com/gobwas/ws",
-    sum = "h1:F2aeBZrm2NDsc7vbovKrWSogd4wvfAxg0FQ89/iqOTk=",
-    version = "v1.2.1",
-)
 
 # gazelle:repository_macro deps.bzl%go_dependencies
 go_dependencies()
@@ -79,25 +59,56 @@ go_register_toolchains()
 
 gazelle_dependencies(go_sdk = "go_sdk")
 
-# rules_docker
+
+#rules_pkg
+
+
 
 http_archive(
-    name = "io_bazel_rules_docker",
-    sha256 = "b1e80761a8a8243d03ebca8845e9cc1ba6c82ce7c5179ce2b295cd36f7e394bf",
-    urls = ["https://github.com/bazelbuild/rules_docker/releases/download/v0.25.0/rules_docker-v0.25.0.tar.gz"],
+    name = "rules_pkg",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
+        "https://github.com/bazelbuild/rules_pkg/releases/download/0.9.1/rules_pkg-0.9.1.tar.gz",
+    ],
+    sha256 = "8f9ee2dc10c1ae514ee599a8b42ed99fa262b757058f65ad3c384289ff70c4b8",
+)
+load("@rules_pkg//:deps.bzl", "rules_pkg_dependencies")
+rules_pkg_dependencies()
+
+# rules_oci
+
+
+http_archive(
+    name = "rules_oci",
+    sha256 = "ad4c9e8da16a92b680772973f77c5dc8d22db6887082dc0a6665277d0897e191",
+    strip_prefix = "rules_oci-1.4.1",
+    url = "https://github.com/bazel-contrib/rules_oci/releases/download/v1.4.1/rules_oci-v1.4.1.tar.gz",
 )
 
-load(
-    "@io_bazel_rules_docker//repositories:repositories.bzl",
-    container_repositories = "repositories",
+load("@rules_oci//oci:dependencies.bzl", "rules_oci_dependencies")
+
+rules_oci_dependencies()
+
+load("@rules_oci//oci:repositories.bzl", "LATEST_CRANE_VERSION", "LATEST_ZOT_VERSION", "oci_register_toolchains")
+
+oci_register_toolchains(
+    name = "oci",
+    crane_version = LATEST_CRANE_VERSION,
+    # Uncommenting the zot toolchain will cause it to be used instead of crane for some tasks.
+    # Note that it does not support docker-format images.
+    # zot_version = LATEST_ZOT_VERSION,
 )
 
-container_repositories()
+# You can pull your base images using oci_pull like this:
+load("@rules_oci//oci:pull.bzl", "oci_pull")
 
-load("@io_bazel_rules_docker//repositories:deps.bzl", container_deps = "deps")
-
-container_deps()
-
-load("@io_bazel_rules_docker//go:image.bzl", go_image_repos = "repositories")
-
-go_image_repos()
+oci_pull(
+    name = "distroless_base",
+    digest = "sha256:ccaef5ee2f1850270d453fdf700a5392534f8d1a8ca2acda391fbb6a06b81c86",
+    image = "gcr.io/distroless/base",
+    platforms = [
+        "linux/amd64",
+        "linux/arm64",
+        "darwin/arm64"
+    ],
+)

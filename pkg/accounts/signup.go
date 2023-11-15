@@ -3,7 +3,6 @@ package accounts
 import (
 	"encoding/json"
 	"errors"
-	"html/template"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -11,7 +10,6 @@ import (
 	"github.com/quillpen/pkg/sessionManager"
 )
 
-var templates *template.Template
 
 func SignUpHandler(resp http.ResponseWriter, req *http.Request) {
 	session, _ := sessionManager.Store.Get(req, sessionManager.SessionName)

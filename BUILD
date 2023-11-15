@@ -1,6 +1,7 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 load("@bazel_gazelle//:def.bzl", "gazelle")
-load("@io_bazel_rules_docker//go:image.bzl", "go_image")
+load("@rules_oci//oci:defs.bzl", "oci_image","oci_push")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 gazelle(
     name = "gazelle",
@@ -34,22 +35,31 @@ go_library(
 
 go_binary(
     name = "quillpen",
-    data = [":html_templates"],
     embed = [":quillpen_lib"],
     visibility = ["//visibility:public"],
 )
 
-filegroup(
-    name = "html_templates",
-    srcs = glob(
-        ["**/*.html"],
-    ),
+
+
+pkg_tar(
+    name = "tar",
+    srcs = [":quillpen"],
 )
 
-go_image(
-    name = "quill_image",
-    binary = ":quillpen",
-    visibility = ["//visibility:public"],
+
+oci_image(
+    name = "quillpen_image",
+    base = "@distroless_base",
+    tars = [":tar"],
+    entrypoint = ["/quillpen"],
+)
+
+oci_push(
+    name = "push_quillpen",
+    image = ":quillpen_image",
+    repository = "index.docker.io/nalajalanaresh/quillpen",
+    remote_tags = ["latest"]
+
 )
 
 alias(

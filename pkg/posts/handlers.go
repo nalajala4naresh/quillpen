@@ -2,20 +2,18 @@ package posts
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"time"
 
 	"github.com/gorilla/mux"
 )
 
-
-
 func CreatePost(resp http.ResponseWriter, req *http.Request) {
 	var post Post
 
 	defer req.Body.Close()
-	data, _ := ioutil.ReadAll(req.Body)
+	data, _ := io.ReadAll(req.Body)
 	json.Unmarshal(data, &post)
 
 	// fill th post details

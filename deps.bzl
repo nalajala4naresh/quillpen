@@ -38,12 +38,6 @@ def go_dependencies():
         version = "v0.0.3",
     )
     go_repository(
-        name = "com_github_gorilla_csrf",
-        importpath = "github.com/gorilla/csrf",
-        sum = "h1:Ir3o2c1/Uzj6FBxMlAUB6SivgVMy1ONXwYgXn+/aHPE=",
-        version = "v1.7.1",
-    )
-    go_repository(
         name = "com_github_gorilla_handlers",
         importpath = "github.com/gorilla/handlers",
         sum = "h1:9lRY6j8DEeeBT10CvO9hGW0gmky0BprnvDI5vfhUHH4=",
@@ -56,12 +50,6 @@ def go_dependencies():
         version = "v1.8.0",
     )
     go_repository(
-        name = "com_github_gorilla_schema",
-        importpath = "github.com/gorilla/schema",
-        sum = "h1:YufUaxZYCKGFuAq3c96BOhjgd5nmXiOY9NGzF247Tsc=",
-        version = "v1.2.0",
-    )
-    go_repository(
         name = "com_github_gorilla_securecookie",
         importpath = "github.com/gorilla/securecookie",
         sum = "h1:miw7JPhV+b/lAHSXz4qd/nN9jRiAFV5FwjeKyCS8BvQ=",
@@ -72,6 +60,12 @@ def go_dependencies():
         importpath = "github.com/gorilla/sessions",
         sum = "h1:DHd3rPN5lE3Ts3D8rKkQ8x/0kqfeNmBAaiSi+o7FsgI=",
         version = "v1.2.1",
+    )
+    go_repository(
+        name = "com_github_gorilla_websocket",
+        importpath = "github.com/gorilla/websocket",
+        sum = "h1:PPwGk2jz7EePpoHN/+ClbZu8SPxiqlu12wZP/3sWmnc=",
+        version = "v1.5.0",
     )
     go_repository(
         name = "com_github_hailocab_go_hostpool",
@@ -96,12 +90,6 @@ def go_dependencies():
         importpath = "github.com/kr/text",
         sum = "h1:45sCR5RtlFHMR4UwH9sdQ5TC8v0qDQCHnXt+kaKSTVE=",
         version = "v0.1.0",
-    )
-    go_repository(
-        name = "com_github_pkg_errors",
-        importpath = "github.com/pkg/errors",
-        sum = "h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=",
-        version = "v0.9.1",
     )
     go_repository(
         name = "com_github_pmezard_go_difflib",
@@ -130,36 +118,30 @@ def go_dependencies():
     go_repository(
         name = "org_golang_x_crypto",
         importpath = "golang.org/x/crypto",
-        sum = "h1:zuSxTR4o9y82ebqCUJYNGJbGPo6sKVl54f/TVDObg1c=",
-        version = "v0.0.0-20220722155217-630584e8d5aa",
+        sum = "h1:UVQgzMY87xqpKNgb+kDsll2Igd33HszWHFLmpaRMq/8=",
+        version = "v0.4.0",
     )
     go_repository(
         name = "org_golang_x_net",
         importpath = "golang.org/x/net",
-        sum = "h1:CIJ76btIcR3eFI5EgSo6k1qKw9KJexJuRLI9G7Hp5wE=",
-        version = "v0.0.0-20211112202133-69e39bad7dc2",
+        sum = "h1:VWL6FNY2bEEmsGVKabSlHu5Irp34xmMRoqb/9lF9lxk=",
+        version = "v0.3.0",
     )
     go_repository(
         name = "org_golang_x_sys",
         importpath = "golang.org/x/sys",
-        sum = "h1:MVltZSvRTcU2ljQOhs94SXPftV6DCNnZViHeQps87pQ=",
-        version = "v0.6.0",
+        sum = "h1:w8ZOecv6NaNa/zC8944JTU3vz4u6Lagfk4RPQxv92NQ=",
+        version = "v0.3.0",
     )
     go_repository(
         name = "org_golang_x_term",
         importpath = "golang.org/x/term",
-        sum = "h1:v+OssWQX+hTHEmOBgwxdZxK4zHq3yOs8F9J7mk0PY8E=",
-        version = "v0.0.0-20201126162022-7de9c90e9dd1",
+        sum = "h1:qoo4akIqOcDME5bhc/NgxUdovd6BSS2uMsVjB56q1xI=",
+        version = "v0.3.0",
     )
     go_repository(
         name = "org_golang_x_text",
         importpath = "golang.org/x/text",
-        sum = "h1:aRYxNxv6iGQlyVaZmk6ZgYEDa+Jg18DxebPSrd6bg1M=",
-        version = "v0.3.6",
-    )
-    go_repository(
-        name = "org_golang_x_tools",
-        importpath = "golang.org/x/tools",
-        sum = "h1:FDhOuMEY4JVRztM/gsbk+IKUQ8kj74bxZrgw87eMMVc=",
-        version = "v0.0.0-20180917221912-90fa682c2a6e",
+        sum = "h1:OLmvp0KP+FVG99Ct/qFiL/Fhk4zp4QQnZ7b2U+5piUM=",
+        version = "v0.5.0",
     )
