@@ -41,11 +41,11 @@ go_download_sdk(
         # 2. You want to avoid the dependency on the index file for the
         #    SHA-256 checksums. In this case, You can get the expected
         #    filenames and checksums from https://go.dev/dl/
-        "linux_amd64": ("go1.21.4.linux-amd64.tar.gz", "73cac0215254d0c7d1241fa40837851f3b9a8a742d0b54714cbdfb3feaf8f0af"),
-        "darwin_arm64": ("go1.21.4.darwin-arm64.tar.gz", "8b7caf2ac60bdff457dba7d4ff2a01def889592b834453431ae3caecf884f6a5"),
-        "linux_arm64" : ("go1.21.4.linux-arm64.tar.gz","ce1983a7289856c3a918e1fd26d41e072cc39f928adfb11ba1896440849b95da"),
+        "linux_amd64": ("go1.20.11.linux-amd64.tar.gz", "ef79a11aa095a08772d2a69e4f152f897c4e96ee297b0dc20264b7dec2961abe"),
+        "darwin_arm64": ("go1.20.11.darwin-arm64.tar.gz", "9c29373ae278dc02c1d8a08465eea8490bb09bea4ba88fce79b01fe75f84961c"),
+        "linux_arm64" : ("go1.20.11.linux-arm64.tar.gz","7908a49c6ce9d48af9b5ba76ccaa0769da45d8b635259a01065b3739acef4ada"),
     },
-    version = "1.21.4",
+    version = "1.20.11",
 )
 
 load("//:deps.bzl", "go_dependencies")
