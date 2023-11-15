@@ -57,8 +57,8 @@ oci_image(
 oci_push(
     name = "push_quillpen",
     image = ":quillpen_image",
-    repository = "index.docker.io/nalajalanaresh/quillpen",
-    remote_tags = ["latest"]
+    repository = "us-docker.pkg.dev/quillpen-405220/quillpen/quillpen",
+    remote_tags = ["1.0.0"]
 
 )
 

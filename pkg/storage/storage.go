@@ -28,11 +28,11 @@ func NewCassandraStore(config *CassandraConfig) (*CassandraStore, error) {
 	cluster.Port = port(cassandraConfig.port)
 	cluster.Keyspace = cassandraConfig.keyspace
 	cluster.Consistency = consistency(cassandraConfig.conistency)
-	cluster.Authenticator = gocql.PasswordAuthenticator{Username: "quillpen-cassandra-at-783686645338", Password: "wGycWm0Erfc3u7nFBdk1oB8T0hiiVWeStzO7lI/2l2E="}
-	cluster.SslOpts = &gocql.SslOptions{
-		CaPath:                 "sf-class2-root.crt",
-		EnableHostVerification: false,
-	}
+	// cluster.Authenticator = gocql.PasswordAuthenticator{Username: "quillpen-cassandra-at-783686645338", Password: "wGycWm0Erfc3u7nFBdk1oB8T0hiiVWeStzO7lI/2l2E="}
+	// cluster.SslOpts = &gocql.SslOptions{
+	// 	CaPath:                 "sf-class2-root.crt",
+	// 	EnableHostVerification: false,
+	// }
 	s, err := cluster.CreateSession()
 	if err != nil {
 		log.Printf("ERROR: fail create cassandra session, %s", err.Error())

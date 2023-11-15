@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
-	"io/ioutil"
 	"os"
 )
 
@@ -19,21 +18,22 @@ type CassandraConfig struct {
 }
 
 var cassandraConfig = CassandraConfig{
-	host:       getEnv("CASSANDRA_HOST", "cassandra.us-east-1.amazonaws.com"),
-	port:       getEnv("CASSANDRA_PORT", "9142"),
+	host:       getEnv("CASSANDRA_HOST", "cassandra-1-cassandra-0.cassandra-1-cassandra-svc.default.svc.cluster.local"),
+	port:       getEnv("CASSANDRA_PORT", "9042"),
 	keyspace:   getEnv("CASSANDRA_KEYSPACE", "quillpen"),
 	conistency: getEnv("CASSANDRA_CONSISTANCY", "LOCAL_QUORUM"),
 }
 
 func init() {
 	// initialize chat DB
+	initCaassandra(&cassandraConfig)
 
 	var err error
 	Cassandra, err = NewCassandraStore(&cassandraConfig)
 	if err != nil {
 		panic(err.Error())
 	}
-	initCaassandra()
+
 }
 
 const (
@@ -51,7 +51,7 @@ func getEnv(key, fallback string) string {
 
 func getCustomTLSConfig(caFile string) (*tls.Config, error) {
 	tlsConfig := new(tls.Config)
-	certs, err := ioutil.ReadFile(caFile)
+	certs, err := os.ReadFile(caFile)
 	if err != nil {
 		return tlsConfig, err
 	}

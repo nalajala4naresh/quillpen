@@ -3,7 +3,7 @@ module github.com/quillpen
 go 1.21.4
 
 require (
-	github.com/gocql/gocql v1.2.0
+	github.com/gocql/gocql v1.6.0
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/sessions v1.2.1
