@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
@@ -18,8 +19,8 @@ func main() {
 	router := mux.NewRouter()
     
 	serverAddr := ":443"
-	certFile := "/etc/tls/cert.pem" // Path to your TLS certificate file
-	keyFile := "/etc/tls/key.pem"
+	certFile := "/etc/tls/tls.crt" // Path to your TLS certificate file
+	keyFile := "/etc/tls/tls.key"
 
 	router.HandleFunc("/signin", accounts.SignInHandler).Methods("POST")
 	router.HandleFunc("/users/{id}", accounts.UserHandler).Methods("GET", "PATCH")
@@ -37,7 +38,10 @@ func main() {
 	logged_handlers := handlers.LoggingHandler(os.Stdout, router)
 	contetTypeHandler := handlers.ContentTypeHandler(logged_handlers, "application/json")
 	compressedHandlers := handlers.CompressHandler(contetTypeHandler)
-	http.ListenAndServeTLS(serverAddr, certFile, keyFile, compressedHandlers)
+	err := http.ListenAndServeTLS(serverAddr, certFile, keyFile, compressedHandlers)
+	if err != nil {
+		panic(fmt.Sprintf("Unable to start the server due to %s",err))
+	}
 }
 
 func IndexHandler(resp http.ResponseWriter, req *http.Request) {

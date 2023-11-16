@@ -39,6 +39,8 @@ spec:
           livenessProbe:
             tcpSocket:
               port: 443
+            initialDelaySeconds: 15
+            periodSeconds: 5
           readinessProbe:
             tcpSocket:
               port: 443

@@ -90,7 +90,7 @@ type Account struct {
 }
 
 func (a *Account) GetAccount() (*Account, error) {
-	q := "SELECT * FROM  accounts WHERE email = ?"
+	q := "SELECT email,password,user_id,username FROM  accounts WHERE email = ?"
 	iter := storage.Cassandra.Session.Query(q, a.Email).Iter()
 	var account Account
 

@@ -3,7 +3,7 @@ package accounts
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
@@ -24,7 +24,7 @@ func SignInHandler(resp http.ResponseWriter, req *http.Request) {
 	var given_account Account
 	defer req.Body.Close()
 
-	jb, _ := ioutil.ReadAll(req.Body)
+	jb, _ := io.ReadAll(req.Body)
 
 	jerr := json.Unmarshal(jb, &given_account)
 	if jerr != nil {

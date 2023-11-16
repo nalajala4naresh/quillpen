@@ -3,7 +3,7 @@ package accounts
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 
@@ -17,7 +17,7 @@ func SignUpHandler(resp http.ResponseWriter, req *http.Request) {
 	var new_account Account
 
 	defer req.Body.Close()
-	jb, _ := ioutil.ReadAll(req.Body)
+	jb, _ := io.ReadAll(req.Body)
 	err := json.Unmarshal(jb, &new_account)
 	if err != nil {
 
