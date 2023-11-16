@@ -37,13 +37,12 @@ spec:
             - containerPort: 443
               protocol: TCP
           livenessProbe:
-            httpGet:
-              path: /health
+            tcpSocket:
               port: 443
           readinessProbe:
-            httpGet:
-              path: /health
+            tcpSocket:
               port: 443
+
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
 
