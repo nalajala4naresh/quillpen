@@ -18,8 +18,8 @@ func main() {
 	router := mux.NewRouter()
 
 	serverAddr := ":443"
-	certFile := "certificate.pem" // Path to your TLS certificate file
-	keyFile := "private_key.pem"
+	certFile := "/etc/tls/cert.pem" // Path to your TLS certificate file
+	keyFile := "/etc/tls/key.pem"
 
 	router.HandleFunc("/signin", accounts.SignInHandler).Methods("POST")
 	router.HandleFunc("/users/{id}", accounts.UserHandler).Methods("GET", "PATCH")

@@ -5,8 +5,8 @@ metadata:
 spec:
   type: {{ .Values.service.type }}
   ports:
-    - targetPort: 80
-      port: 80
+    - targetPort: 443
+      port: 443
       protocol: TCP
         
   selector:

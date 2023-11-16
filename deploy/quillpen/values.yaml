@@ -5,13 +5,16 @@
 replicaCount: 1
 
 image:
-  repository: 783686645338.dkr.ecr.us-east-1.amazonaws.com/quillpen
-  pullPolicy: IfNotPresent
+  repository: us-docker.pkg.dev/quillpen-405220/quillpen/quillpen
+  pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v4"
+  tag: "1.0.0"
 
-imagePullSecrets:
-   - name: "quillpen"
+tls:
+  enabled: true
+  secretName: quill-tls-secret
+  
+
 nameOverride: "quillpen"
 fullnameOverride: "quillpen"
 
@@ -38,53 +41,53 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
-  type: ClusterIP
-  port: 80
+  type: LoadBalancer
+  port: 443
 
 pod:
   livenessProbe:
-    port: 80
+    port: 443
   readinessProbe:
-    port: 80
+    port: 443
 
 # install aws-load-balancer-controller 1.5.3 
 ingress:
-  enabled: true
-  className: alb
-  annotations:
-     alb.ingress.kubernetes.io/scheme: internet-facing
-     alb.ingress.kubernetes.io/target-type: ip
-     alb.ingress.kubernetes.io/subnets: subnet-612d843d, subnet-b167c9d6
-     alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
-     alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:783686645338:certificate/72e931ca-2367-4a14-bc87-45007f0ddca4
-  hosts:
-    - host: akashavaani.com
-      paths:
-        - path: /
-          pathType: Prefix
+  enabled: false
+#   className: alb
+#   annotations:
+#      alb.ingress.kubernetes.io/scheme: internet-facing
+#      alb.ingress.kubernetes.io/target-type: ip
+#      alb.ingress.kubernetes.io/subnets: subnet-612d843d, subnet-b167c9d6
+#      alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS":443}]'
+#      alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:783686645338:certificate/72e931ca-2367-4a14-bc87-45007f0ddca4
+#   hosts:
+#     - host: akashavaani.com
+#       paths:
+#         - path: /
+#           pathType: Prefix
 
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+#   tls: []
+#   #  - secretName: chart-example-tls
+#   #    hosts:
+#   #      - chart-example.local
 
 
-resources: {}
+resources: 
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  limits:
+    cpu: 2
+    memory: 4Gi
+  requests:
+    cpu: 2
+    memory: 4Gi
 
 autoscaling:
   enabled: false
   minReplicas: 1
-  maxReplicas: 100
+  maxReplicas: 10
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
 
