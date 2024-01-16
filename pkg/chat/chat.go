@@ -86,6 +86,14 @@ type ConversationMessage struct {
 	Message        string     `json:"message" cql:"message"`
 }
 
+type MessageStatus struct {
+
+	MessageId      gocql.UUID `json:"message_id" cql:"message_id"`
+	Sent bool `json:"sent" cql:"sent"`
+	Delivered bool `json:"delivered" cql:"delivered"`
+	Read bool `json:"read" cql:"read"`
+}
+
 func (c *ConversationMessage) ListMessages(messageId *gocql.UUID) ([]ConversationMessage, error) {
 	var query string
 	if messageId == nil {
@@ -129,7 +137,6 @@ func (s *ConversationMessage) SaveMessage() error {
 	}
 	return err
 }
-
 func ConversationsHandler(w http.ResponseWriter, r *http.Request) {
 
 	var conversation UserConversation
