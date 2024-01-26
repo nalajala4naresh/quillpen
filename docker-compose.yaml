@@ -1,6 +1,6 @@
 services:
  elassandra:
-    image: erangaeb/elassandra:6.2
+    image: erangaeb/elassandra:6.7
     container_name: elassandra
     environment:
         - CASSANDRA_BROADCAST_ADDRESS=host.docker.internal
