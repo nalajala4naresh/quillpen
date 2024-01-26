@@ -13,8 +13,6 @@
     "commitMessageTopic": "{{depName}} dependency",
     "commitMessageExtra": "to {{newValue}}",
     "commitMessageSuffix": "[skip ci]",
-    "labels": ["dependencies", "go"],
-    "assignees": ["<github-username>"],
-    "reviewers": ["<github-username>"]
+    "labels": ["dependencies", "go"]
   }
 }
