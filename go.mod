@@ -1,6 +1,6 @@
 module github.com/quillpen
 
-go 1.21.6
+go 1.21
 
 require (
 	github.com/gocql/gocql v1.6.0
