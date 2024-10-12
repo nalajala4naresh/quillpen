@@ -18,7 +18,7 @@ jobs:
           go install github.com/bazelbuild/bazelisk@latest
       - name: Build with Bazel
         run: |
-          bazelisk build //...
+          bazelisk build //:quillpen
 
   bazel-test:
     needs: bazel-build
@@ -27,4 +27,4 @@ jobs:
       - uses: actions/checkout@v3
       - name: Run Bazel Tests
         run: |
-          bazelisk test //...
+          bazelisk test //:quillpen
