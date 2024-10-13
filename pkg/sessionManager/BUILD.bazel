@@ -1,9 +1,9 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "sessionManager",
     srcs = ["session.go"],
     importpath = "github.com/quillpen/pkg/sessionManager",
     visibility = ["//visibility:public"],
-    deps = ["@com_github_gorilla_sessions//:sessions"],
+    deps = ["@com_github_gorilla_sessions//:go_default_library"],
 )

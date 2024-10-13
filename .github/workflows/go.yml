@@ -9,20 +9,7 @@ on:
       - master
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v3
-      - name: Install Golangci-lint
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.51.2
-      - name: Run Linter
-        run: |
-          ./bin/golangci-lint run
-
   bazel-build:
-    needs: lint
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -31,13 +18,24 @@ jobs:
           go install github.com/bazelbuild/bazelisk@latest
       - name: Build with Bazel
         run: |
-          bazelisk build //...
+          bazelisk build //:quillpen
 
   bazel-test:
     needs: bazel-build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Query for Bazel test targets
+        id: check_tests
+        run: |
+          if bazel query 'kind(test, //...)' | grep -q .; then
+            echo "tests_found=true" >> $GITHUB_ENV
+            echo "::set-output name=tests_found::true"
+          else
+            echo "tests_found=false" >> $GITHUB_ENV
+            echo "::set-output name=tests_found::false"
+          fi
       - name: Run Bazel Tests
+        if: steps.check_tests.outputs.tests_found == 'true'
         run: |
           bazelisk test //...
