@@ -4,12 +4,7 @@ on: ["push", "pull_request"]
 jobs:
   ci:
     name: "Run CI Lint" 
-    strategy:
-      fail-fast: false
-      matrix:
-        os:  ["windows-latest", "ubuntu-latest", "macOS-latest"]
-        go:  ["1.23.x"]
-    runs-on: ${{ matrix.os }}
+    runs-on: "ubuntu-latest" 
     steps:
     - uses: actions/checkout@v4
       with:
