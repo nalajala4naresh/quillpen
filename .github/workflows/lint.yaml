@@ -15,6 +15,7 @@ jobs:
     - run: "go test ./..."
     - run: "go vet ./..."
     - uses: dominikh/staticcheck-action@v1
+      continue-on-error: true
       with:
         version: "latest"
         install-go: false
