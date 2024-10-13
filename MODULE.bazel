@@ -65,7 +65,7 @@ bazel_dep(name = "gazelle", version = "0.39.1")
 bazel_dep(name = "rules_pkg", version = "1.0.1")
 bazel_dep(name = "rules_oci", version = "2.0.0")
 
-#### bazel-diff for finding impacted targets
+
 
 http_jar = use_repo_rule("@bazel_tools//tools/build_defs/repo:http.bzl", "http_jar")
 
@@ -76,3 +76,4 @@ http_jar(
         "https://github.com/Tinder/bazel-diff/releases/download/7.0.0/bazel-diff_deploy.jar",
     ],
 )
+

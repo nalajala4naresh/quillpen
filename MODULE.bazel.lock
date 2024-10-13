@@ -617,6 +617,7 @@
         "recordedRepoMappingEntries": []
       }
     },
+
     "@@rules_jvm_external~//:extensions.bzl%maven": {
       "general": {
         "bzlTransitiveDigest": "U98JuBYMWVrcyiXT1L6KAYSAA0chnjRZZloIUmNmZ7M=",
