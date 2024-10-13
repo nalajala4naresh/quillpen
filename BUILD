@@ -1,5 +1,11 @@
 load("@rules_go//go:def.bzl", "go_binary", "go_library")
+load("@rules_java//java:defs.bzl", "java_binary")
 
+java_binary(
+    name = "bazel-diff",
+    main_class = "com.bazel_diff.Main",
+    runtime_deps = ["@bazel_diff//jar"],
+)
 
 go_library(
     name = "quillpen_lib",
