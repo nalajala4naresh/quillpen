@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library")
+load("@rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "posts",
@@ -10,6 +10,6 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/storage",
-        "@com_github_gorilla_mux//:mux",
+        "@com_github_gorilla_mux//:go_default_library",
     ],
 )
