@@ -1,5 +1,4 @@
-name: CI Pipeline for Golang
-
+name: CI Pipeline for quillpen
 on:
   push:
     branches:
@@ -38,4 +37,9 @@ jobs:
       - name: Run Bazel Tests
         if: steps.check_tests.outputs.tests_found == 'true'
         run: |
+          git checkout HEAD^
+          bazelisk run --java_runtime_version=remotejdk_11 //:bazel-diff  -- generate-hashes --workspacePath=`pwd` start.json
+          git checkout HEAD
+          bazelisk run --java_runtime_version=remotejdk_11 //:bazel-diff  -- generate-hashes --workspacePath=`pwd` end.json
+          bazel run --java_runtime_version=remotejdk_11 //:bazel-diff  -- get-impacted-targets -sh start.json -fh end.json 
           bazelisk test //...
